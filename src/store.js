@@ -56,7 +56,7 @@ class ActionContext {
                 value: value,
                 prop: prop
             };
-            this.store.log.push(arg);
+            this.store.log(arg);
             this.store.fire('change', arg);
         }
     }
@@ -79,7 +79,7 @@ class ActionContext {
                 prop: prop
             };
 
-            this.store.log.push(arg);
+            this.store.log(arg);
             this.store.fire('change', arg);
         }
     }
@@ -102,7 +102,7 @@ class ActionContext {
                 prop: prop
             };
 
-            this.store.log.push(arg);
+            this.store.log(arg);
             this.store.fire('change', arg);
         }
     }
@@ -129,7 +129,7 @@ class ActionContext {
                 prop: prop
             };
 
-            this.store.log.push(arg);
+            this.store.log(arg);
             this.store.fire('change', arg);
 
             return value;
@@ -157,7 +157,7 @@ class ActionContext {
                 prop: prop
             };
 
-            this.store.log.push(arg);
+            this.store.log(arg);
             this.store.fire('change', arg);
 
             return value;
@@ -186,7 +186,7 @@ class ActionContext {
                 index: index
             };
 
-            this.store.log.push(arg);
+            this.store.log(arg);
             this.store.fire('change', arg);
 
             return value;
@@ -238,7 +238,7 @@ export default class Store extends EventTarget {
 
         this.raw = initData;
         this.actions = actions;
-        this.log = [];
+        this.logs = [];
     }
 
     /**
@@ -299,10 +299,22 @@ export default class Store extends EventTarget {
         let action = this.actions[name];
 
         if (typeof action === 'function') {
+            this.log('Action start: ' + name);
+
             let context = new ActionContext(store, name);
             action.call(context, payload);
+
+            this.log('Action done: ' + name);
         }
     }
-}
 
+    /**
+     * 记录日志
+     *
+     * @param {string|Object} info 日志信息，可能是字符串，也可能是一个操作信息对象
+     */
+    log(info) {
+        this.logs.push(info);
+    }
+}
 
