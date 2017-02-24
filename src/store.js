@@ -1,42 +1,82 @@
+/**
+ * san-store
+ * Copyright 2017 Baidu Inc. All rights reserved.
+ *
+ * @file store class
+ * @author errorrik
+ */
+
 
 import EventTarget from 'mini-event/EventTarget';
 import {set, push, unshift, splice} from 'san-update';
 import parseName from './parse-name';
 
-
+/**
+ * action 运行环境类，其实例对象作为 action 运行时的 this
+ *
+ * @class
+ */
 class ActionContext {
-    constructor(store, actionName) {
+    /**
+     * 构造函数
+     *
+     * @param {Store} store 所属数据容器对象
+     * @param {string} name action的名称
+     */
+    constructor(store, name) {
         this.store = store;
-        this.actionName = actionName;
+        this.name = name;
     }
 
-    set(name, value) {
-        name = parseName(name);
+    /**
+     * dispatch 一个 action
+     *
+     * @param {string} name action名称
+     * @param {*} payload payload
+     */
+    dispatch(name, payload) {
+        this.store.dispatch(name, payload);
+    }
 
-        if (value !== this.store.get(name)) {
-            this.store.raw = set(this.store.raw, name, value);
+    /**
+     * 在数据容器对象设置中设值
+     *
+     * @param {string} name 数据项的名称
+     * @param {*} value 数据项的值
+     */
+    set(name, value) {
+        let prop = parseName(name);
+
+        if (value !== this.store.get(prop)) {
+            this.store.raw = set(this.store.raw, prop, value);
 
             let arg = {
                 change: 'set',
-                action: this.actionName,
+                action: this.name,
                 value: value,
-                prop: name
+                prop: prop
             };
             this.store.log.push(arg);
             this.store.fire('change', arg);
         }
     }
 
+    /**
+     * 为数组的数据项 push 一条数据
+     *
+     * @param {string} name 数据项的名称
+     * @param {*} value 要push的数据
+     */
     push(name, value) {
         if (value != null) {
-            name = parseName(name);
+            let prop = parseName(name);
 
-            this.store.raw = push(this.store.raw, name, value);
+            this.store.raw = push(this.store.raw, prop, value);
             let arg = {
                 change: 'push',
-                action: this.actionName,
+                action: this.name,
                 value: value,
-                prop: name
+                prop: prop
             };
 
             this.store.log.push(arg);
@@ -44,16 +84,22 @@ class ActionContext {
         }
     }
 
+    /**
+     * 为数组的数据项 unshift 一条数据
+     *
+     * @param {string} name 数据项的名称
+     * @param {*} value 要unshift的数据
+     */
     unshift(name, value) {
         if (value != null) {
-            name = parseName(name);
+            let prop = parseName(name);
 
-            this.store.raw = unshift(this.store.raw, name, value);
+            this.store.raw = unshift(this.store.raw, prop, value);
             let arg = {
                 change: 'unshift',
-                action: this.actionName,
+                action: this.name,
                 value: value,
-                prop: name
+                prop: prop
             };
 
             this.store.log.push(arg);
@@ -61,20 +107,26 @@ class ActionContext {
         }
     }
 
+    /**
+     * 数组数据项的 pop 操作
+     *
+     * @param {string} name 数据项的名称
+     * @return {*}
+     */
     pop(name) {
-        name = parseName(name);
+        let prop = parseName(name);
 
-        let array = this.store.get(name);
+        let array = this.store.get(prop);
         let arrayLen;
         if (array instanceof Array && (arrayLen = array.length) > 0) {
             let value = array[arrayLen - 1];
 
-            this.store.raw = splice(this.store.raw, name, arrayLen - 1, 1);
+            this.store.raw = splice(this.store.raw, prop, arrayLen - 1, 1);
             let arg = {
                 change: 'pop',
-                action: this.actionName,
+                action: this.name,
                 value: value,
-                prop: name
+                prop: prop
             };
 
             this.store.log.push(arg);
@@ -84,19 +136,25 @@ class ActionContext {
         }
     }
 
+    /**
+     * 数组数据项的 shift 操作
+     *
+     * @param {string} name 数据项的名称
+     * @return {*}
+     */
     shift(name) {
-        name = parseName(name);
+        let prop = parseName(name);
 
-        let array = this.store.get(name);
+        let array = this.store.get(prop);
         if (array instanceof Array && array.length > 0) {
             let value = array[0];
 
-            this.store.raw = splice(this.store.raw, name, 0, 1);
+            this.store.raw = splice(this.store.raw, prop, 0, 1);
             let arg = {
                 change: 'shift',
-                action: this.actionName,
+                action: this.name,
                 value: value,
-                prop: name
+                prop: prop
             };
 
             this.store.log.push(arg);
@@ -106,19 +164,25 @@ class ActionContext {
         }
     }
 
+    /**
+     * 根据 index 移除数组数据项的 item
+     *
+     * @param {string} name 数据项的名称
+     * @param {number} index 要移除项的index
+     */
     removeAt(name, index) {
-        name = parseName(name);
+        let prop = parseName(name);
 
-        let array = this.store.get(name);
+        let array = this.store.get(prop);
         if (array instanceof Array && array.length > index) {
             let value = array[index];
 
-            this.store.raw = splice(this.store.raw, name, index, 1);
+            this.store.raw = splice(this.store.raw, prop, index, 1);
             let arg = {
                 change: 'remove',
-                action: this.actionName,
+                action: this.name,
                 value: value,
-                prop: name,
+                prop: prop,
                 index: index
             };
 
@@ -129,24 +193,41 @@ class ActionContext {
         }
     }
 
+    /**
+     * 移除数组数据项中的 item
+     *
+     * @param {string} name 数据项的名称
+     * @param {*} value 要移除的项
+     */
     remove(name, value) {
-        name = parseName(name);
+        let prop = parseName(name);
 
-        let array = this.store.get(name);
+        let array = this.store.get(prop);
         if (array instanceof Array) {
             let len = array.length;
 
             while (len--) {
                 if (array[len] === value) {
-                    return this.removeAt(name, len);
+                    return this.removeAt(prop, len);
                 }
             }
         }
     }
 }
 
-
+/**
+ * Store 类，应用程序状态数据的容器
+ *
+ * @class
+ */
 export default class Store extends EventTarget {
+    /**
+     * 构造函数
+     *
+     * @param {Object?} options 初始化参数
+     * @param {Object?} options.initData 容器的初始化数据
+     * @param {Object?} options.actions 容器的action函数集合
+     */
     constructor(
         {
             initData = {},
@@ -160,6 +241,12 @@ export default class Store extends EventTarget {
         this.log = [];
     }
 
+    /**
+     * 获取容器数据
+     *
+     * @param {string} name 数据项的名称
+     * @return {*}
+     */
     get(name) {
         name = parseName(name);
 
@@ -171,6 +258,12 @@ export default class Store extends EventTarget {
         return value;
     }
 
+    /**
+     * 添加一个 action
+     *
+     * @param {string} name action的名称
+     * @param {Function} action action函数
+     */
     addAction(name, action) {
         if (typeof action !== 'function') {
             return;
@@ -183,14 +276,25 @@ export default class Store extends EventTarget {
         this.actions[name] = action;
     }
 
-    addActions(source) {
-        for (let key in source) {
-            if (source.hasOwnProperty(key)) {
-                this.addAction(key, source[key]);
+    /**
+     * 添加多个 action
+     *
+     * @param {Object} actions action集合对象。对象的key是action的name，value是action函数
+     */
+    addActions(actions) {
+        for (let key in actions) {
+            if (actions.hasOwnProperty(key)) {
+                this.addAction(key, actions[key]);
             }
         }
     }
 
+    /**
+     * action 的 dispatch 入口
+     *
+     * @param {string} name action名称
+     * @param {*} payload payload
+     */
     dispatch(name, payload) {
         let action = this.actions[name];
 
