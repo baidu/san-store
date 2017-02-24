@@ -3,9 +3,161 @@ import EventTarget from 'mini-event/EventTarget';
 import {set, push, unshift, splice} from 'san-update';
 import parseName from './parse-name';
 
-export class Store extends EventTarget {
-    constructor(defaultValue = {}) {
-        this.raw = defaultValue;
+
+class ActionContext {
+    constructor(store, actionName) {
+        this.store = store;
+        this.actionName = actionName;
+    }
+
+    set(name, value) {
+        name = parseName(name);
+
+        if (value !== this.store.get(name)) {
+            this.store.raw = set(this.store.raw, name, value);
+
+            let arg = {
+                change: 'set',
+                action: this.actionName,
+                value: value,
+                prop: name
+            };
+            this.store.log.push(arg);
+            this.store.fire('change', arg);
+        }
+    }
+
+    push(name, value) {
+        if (value != null) {
+            name = parseName(name);
+
+            this.store.raw = push(this.store.raw, name, value);
+            let arg = {
+                change: 'push',
+                action: this.actionName,
+                value: value,
+                prop: name
+            };
+
+            this.store.log.push(arg);
+            this.store.fire('change', arg);
+        }
+    }
+
+    unshift(name, value) {
+        if (value != null) {
+            name = parseName(name);
+
+            this.store.raw = unshift(this.store.raw, name, value);
+            let arg = {
+                change: 'unshift',
+                action: this.actionName,
+                value: value,
+                prop: name
+            };
+
+            this.store.log.push(arg);
+            this.store.fire('change', arg);
+        }
+    }
+
+    pop(name) {
+        name = parseName(name);
+
+        let array = this.store.get(name);
+        let arrayLen;
+        if (array instanceof Array && (arrayLen = array.length) > 0) {
+            let value = array[arrayLen - 1];
+
+            this.store.raw = splice(this.store.raw, name, arrayLen - 1, 1);
+            let arg = {
+                change: 'pop',
+                action: this.actionName,
+                value: value,
+                prop: name
+            };
+
+            this.store.log.push(arg);
+            this.store.fire('change', arg);
+
+            return value;
+        }
+    }
+
+    shift(name) {
+        name = parseName(name);
+
+        let array = this.store.get(name);
+        if (array instanceof Array && array.length > 0) {
+            let value = array[0];
+
+            this.store.raw = splice(this.store.raw, name, 0, 1);
+            let arg = {
+                change: 'shift',
+                action: this.actionName,
+                value: value,
+                prop: name
+            };
+
+            this.store.log.push(arg);
+            this.store.fire('change', arg);
+
+            return value;
+        }
+    }
+
+    removeAt(name, index) {
+        name = parseName(name);
+
+        let array = this.store.get(name);
+        if (array instanceof Array && array.length > index) {
+            let value = array[index];
+
+            this.store.raw = splice(this.store.raw, name, index, 1);
+            let arg = {
+                change: 'remove',
+                action: this.actionName,
+                value: value,
+                prop: name,
+                index: index
+            };
+
+            this.store.log.push(arg);
+            this.store.fire('change', arg);
+
+            return value;
+        }
+    }
+
+    remove(name, value) {
+        name = parseName(name);
+
+        let array = this.store.get(name);
+        if (array instanceof Array) {
+            let len = array.length;
+
+            while (len--) {
+                if (array[len] === value) {
+                    return this.removeAt(name, len);
+                }
+            }
+        }
+    }
+}
+
+
+export default class Store extends EventTarget {
+    constructor(
+        {
+            initData = {},
+            actions = {}
+        } = {}
+    ) {
+        super();
+
+        this.raw = initData;
+        this.actions = actions;
+        this.log = [];
     }
 
     get(name) {
@@ -19,113 +171,32 @@ export class Store extends EventTarget {
         return value;
     }
 
-    set(name, value) {
-        name = parseName(name);
-
-        if (value !== this.get(name)) {
-            this.raw = set(this.raw, name, value);
-            this.fire('change', {
-                type: 'set',
-                value: value,
-                prop: name
-            });
+    addAction(name, action) {
+        if (typeof action !== 'function') {
+            return;
         }
+
+        if (this.actions[name]) {
+            throw new Error('Action ' + name + ' exists!');
+        }
+
+        this.actions[name] = action;
     }
 
-    push(name, value) {
-        if (value != null) {
-            name = parseName(name);
-
-            this.raw = push(this.raw, name, value);
-            this.fire('change', {
-                type: 'push',
-                value: value,
-                prop: name
-            });
-        }
-    }
-
-    unshift(name, value) {
-        if (value != null) {
-            name = parseName(name);
-
-            this.raw = unshift(this.raw, name, value);
-            this.fire('change', {
-                type: 'unshift',
-                value: value,
-                prop: name
-            });
-        }
-    }
-
-    pop(name) {
-        name = parseName(name);
-
-        let array = this.get(name);
-        let arrayLen;
-        if (array instaceof Array && (arrayLen = array.length) > 0) {
-            let value = array[arrayLen - 1];
-
-            this.raw = splice(this.raw, name, arrayLen - 1, 1);
-            this.fire('change', {
-                type: 'pop',
-                value: value,
-                prop: name
-            });
-
-            return value;
-        }
-    }
-
-    shift(name) {
-        name = parseName(name);
-
-        let array = this.get(name);
-        if (array instaceof Array && array.length > 0) {
-            let value = array[0];
-
-            this.raw = splice(this.raw, name, 0, 1);
-            this.fire('change', {
-                type: 'shift',
-                value: value,
-                prop: name
-            });
-
-            return value;
-        }
-    }
-
-    removeAt(name, index) {
-        name = parseName(name);
-
-        let array = this.get(name);
-        if (array instaceof Array && array.length > index) {
-            let value = array[index];
-
-            this.raw = splice(this.raw, name, index, 1);
-            this.fire('change', {
-                type: 'remove',
-                value: value,
-                prop: name,
-                index: index
-            });
-
-            return value;
-        }
-    }
-
-    remove(name, value) {
-        name = parseName(name);
-
-        let array = this.get(name);
-        if (array instaceof Array) {
-            let len = array.length;
-
-            while (len--) {
-                if (array[len] === value) {
-                    return this.removeAt(name, len);
-                }
+    addActions(source) {
+        for (let key in source) {
+            if (source.hasOwnProperty(key)) {
+                this.addAction(key, source[key]);
             }
+        }
+    }
+
+    dispatch(name, payload) {
+        let action = this.actions[name];
+
+        if (typeof action === 'function') {
+            let context = new ActionContext(store, name);
+            action.call(this, context, payload);
         }
     }
 }
