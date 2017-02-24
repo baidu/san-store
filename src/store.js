@@ -196,7 +196,7 @@ export default class Store extends EventTarget {
 
         if (typeof action === 'function') {
             let context = new ActionContext(store, name);
-            action.call(this, context, payload);
+            action.call(context, payload);
         }
     }
 }
