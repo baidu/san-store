@@ -9,6 +9,7 @@
 
 import EventTarget from 'mini-event/EventTarget';
 import parseName from './parse-name';
+import {defineLazyProperty, visit} from './util/index';
 
 /**
  * Store 类，应用程序状态数据的容器
@@ -87,7 +88,9 @@ export default class Store extends EventTarget {
             let macro = action(payload, this.raw);
             let update = macro.build();
             let records = macro.unpack()[1];
-            this.raw = update(this.raw);
+            let oldData = this.raw;
+            let newData = update(oldData);
+            this.raw = newData;
 
             for (let record of records) {
                 let event = {
@@ -96,6 +99,9 @@ export default class Store extends EventTarget {
                     prop: record.path,
                     action: name
                 };
+                defineLazyProperty(event, 'oldValue', () => visit(oldData, record.path));
+                defineLazyProperty(event, 'newValue', () => visit(newData, record.path));
+
                 this.log(event);
                 this.fire('change', event);
             }
