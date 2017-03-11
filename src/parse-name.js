@@ -1,7 +1,18 @@
+/**
+ * san-store
+ * Copyright 2017 Baidu Inc. All rights reserved.
+ *
+ * @file 解析数据属性名
+ * @author errorrik
+ */
 
 
-
-
+/**
+ * 解析数据属性名，返回数组形式的 terms
+ *
+ * @param {string} source 数据属性的字符串形式
+ * @return {Array}
+ */
 export default function parseName(source) {
     if (source instanceof Array) {
         return source;

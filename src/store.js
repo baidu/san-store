@@ -7,212 +7,23 @@
  */
 
 
-import EventTarget from 'mini-event/EventTarget';
-import {set, push, unshift, splice} from 'san-update';
+import flattenDiff from './flatten-diff';
 import parseName from './parse-name';
 
-/**
- * action 运行环境类，其实例对象作为 action 运行时的 this
- *
- * @class
- */
-class ActionContext {
-    /**
-     * 构造函数
-     *
-     * @param {Store} store 所属数据容器对象
-     * @param {string} name action的名称
-     */
-    constructor(store, name) {
-        this.store = store;
-        this.name = name;
+const GUID_CHARS = 'qwertyuiopasdfghjklzxcvbnm'.split();
+
+function randomChars() {
+    let chars = '';
+
+    for (let i = 0; i < 3; i++) {
+        chars += GUID_CHARS[Math.floor(Math.random()*25)];
     }
 
-    /**
-     * dispatch 一个 action
-     *
-     * @param {string} name action名称
-     * @param {*} payload payload
-     */
-    dispatch(name, payload) {
-        this.store.dispatch(name, payload);
-    }
+    return chars;
+}
 
-    /**
-     * 在数据容器对象设置中设值
-     *
-     * @param {string} name 数据项的名称
-     * @param {*} value 数据项的值
-     */
-    set(name, value) {
-        let prop = parseName(name);
-
-        if (value !== this.store.get(prop)) {
-            this.store.raw = set(this.store.raw, prop, value);
-
-            let arg = {
-                change: 'set',
-                action: this.name,
-                value: value,
-                prop: prop
-            };
-            this.store.log(arg);
-            this.store.fire('change', arg);
-        }
-    }
-
-    /**
-     * 为数组的数据项 push 一条数据
-     *
-     * @param {string} name 数据项的名称
-     * @param {*} value 要push的数据
-     */
-    push(name, value) {
-        if (value != null) {
-            let prop = parseName(name);
-
-            this.store.raw = push(this.store.raw, prop, value);
-            let arg = {
-                change: 'push',
-                action: this.name,
-                value: value,
-                prop: prop
-            };
-
-            this.store.log(arg);
-            this.store.fire('change', arg);
-        }
-    }
-
-    /**
-     * 为数组的数据项 unshift 一条数据
-     *
-     * @param {string} name 数据项的名称
-     * @param {*} value 要unshift的数据
-     */
-    unshift(name, value) {
-        if (value != null) {
-            let prop = parseName(name);
-
-            this.store.raw = unshift(this.store.raw, prop, value);
-            let arg = {
-                change: 'unshift',
-                action: this.name,
-                value: value,
-                prop: prop
-            };
-
-            this.store.log(arg);
-            this.store.fire('change', arg);
-        }
-    }
-
-    /**
-     * 数组数据项的 pop 操作
-     *
-     * @param {string} name 数据项的名称
-     * @return {*}
-     */
-    pop(name) {
-        let prop = parseName(name);
-
-        let array = this.store.get(prop);
-        let arrayLen;
-        if (array instanceof Array && (arrayLen = array.length) > 0) {
-            let value = array[arrayLen - 1];
-
-            this.store.raw = splice(this.store.raw, prop, arrayLen - 1, 1);
-            let arg = {
-                change: 'pop',
-                action: this.name,
-                value: value,
-                prop: prop
-            };
-
-            this.store.log(arg);
-            this.store.fire('change', arg);
-
-            return value;
-        }
-    }
-
-    /**
-     * 数组数据项的 shift 操作
-     *
-     * @param {string} name 数据项的名称
-     * @return {*}
-     */
-    shift(name) {
-        let prop = parseName(name);
-
-        let array = this.store.get(prop);
-        if (array instanceof Array && array.length > 0) {
-            let value = array[0];
-
-            this.store.raw = splice(this.store.raw, prop, 0, 1);
-            let arg = {
-                change: 'shift',
-                action: this.name,
-                value: value,
-                prop: prop
-            };
-
-            this.store.log(arg);
-            this.store.fire('change', arg);
-
-            return value;
-        }
-    }
-
-    /**
-     * 根据 index 移除数组数据项的 item
-     *
-     * @param {string} name 数据项的名称
-     * @param {number} index 要移除项的index
-     */
-    removeAt(name, index) {
-        let prop = parseName(name);
-
-        let array = this.store.get(prop);
-        if (array instanceof Array && array.length > index) {
-            let value = array[index];
-
-            this.store.raw = splice(this.store.raw, prop, index, 1);
-            let arg = {
-                change: 'remove',
-                action: this.name,
-                value: value,
-                prop: prop,
-                index: index
-            };
-
-            this.store.log(arg);
-            this.store.fire('change', arg);
-
-            return value;
-        }
-    }
-
-    /**
-     * 移除数组数据项中的 item
-     *
-     * @param {string} name 数据项的名称
-     * @param {*} value 要移除的项
-     */
-    remove(name, value) {
-        let prop = parseName(name);
-
-        let array = this.store.get(prop);
-        if (array instanceof Array) {
-            let len = array.length;
-
-            while (len--) {
-                if (array[len] === value) {
-                    return this.removeAt(prop, len);
-                }
-            }
-        }
-    }
+function guid() {
+    return (new Date()).getTime() + randomChars();
 }
 
 /**
@@ -220,7 +31,7 @@ class ActionContext {
  *
  * @class
  */
-export default class Store extends EventTarget {
+export default class Store {
     /**
      * 构造函数
      *
@@ -234,28 +45,56 @@ export default class Store extends EventTarget {
             actions = {}
         } = {}
     ) {
-        super();
-
         this.raw = initData;
         this.actions = actions;
         this.logs = [];
+        this.listeners = [];
     }
 
     /**
      * 获取容器数据
      *
-     * @param {string} name 数据项的名称
-     * @return {*}
+     * @return {Object}
      */
     get(name) {
-        name = parseName(name);
+        return this.raw;
+    }
 
-        let value = this.raw;
-        for (let i = 0, l = name.length; value != null && i < l; i++) {
-            value = value[name[i]];
+    /**
+     * 监听 store 数据变化
+     *
+     * @param {Function} listener 监听器函数，接收diff对象
+     */
+    listen(listener) {
+        if (typeof listener === 'function') {
+            this.listeners.push(listener);
         }
+    }
 
-        return value;
+    /**
+     * 移除 store 数据变化监听器
+     *
+     * @param {Function} listener 监听器函数
+     */
+    unlisten(listener) {
+        let len = this.listeners.length;
+        while (len--) {
+            if (this.listeners[len] === listener){
+                this.listeners.splice(len, 1);
+            }
+        }
+    }
+
+    /**
+     * 触发 store 数据变化
+     *
+     * @private
+     * @param {Array} diff 数据变更信息对象
+     */
+    _fire(diff) {
+        this.listeners.forEach(listener => {
+            listener.call(this, diff);
+        });
     }
 
     /**
@@ -297,14 +136,40 @@ export default class Store extends EventTarget {
      */
     dispatch(name, payload) {
         let action = this.actions[name];
+        let actionId = guid();
 
         if (typeof action === 'function') {
-            this.log('Action start: ' + name);
+            this.log({
+                id: actionId,
+                name: name,
+                message: 'Action Start'
+            });
 
-            let context = new ActionContext(store, name);
-            action.call(context, payload);
+            let macro = action.call(this, payload);
 
-            this.log('Action done: ' + name);
+            if (macro && typeof macro.buildWithDiff === 'function') {
+                let oldRaw = this.raw;
+                let [data, diff] = macro.buildWithDiff()(oldRaw);
+
+                diff = flattenDiff(diff)
+                this.raw = data;
+
+                this.log({
+                    id: actionId,
+                    name: name,
+                    message: 'Store Update',
+                    old: oldRaw,
+                    diff: diff
+                });
+
+                this._fire(diff);
+            }
+
+            this.log({
+                id: actionId,
+                name: name,
+                message: 'Action Done'
+            });
         }
     }
 
@@ -317,4 +182,5 @@ export default class Store extends EventTarget {
         this.logs.push(info);
     }
 }
+
 
