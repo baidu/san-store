@@ -9,11 +9,12 @@ describe('Connect san component', () => {
             .set('name', 'errorrik')
             .set('emails', ['errorrik@gmail.com']);
 
-        return updateBuilder;
+        return resetBuilder;
     });
 
-    beforeEach(() => {
+    beforeEach(done => {
         store.dispatch('reset-for-connect');
+        setTimeout(done, 1);
     });
 
     it('data should be ready when component init', () => {
@@ -40,11 +41,11 @@ describe('Connect san component', () => {
 
     it('component data should be update when store data change', done => {
         store.addAction('for-connect-1', payload => {
-            let resetBuilder = updateBuilder()
+            let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
 
-            return updateBuilder;
+            return builder;
         });
 
         let MyComponent = san.defineComponent({
@@ -82,11 +83,11 @@ describe('Connect san component', () => {
 
     it('component data should be update when store data change, function mapStates item', done => {
         store.addAction('for-connect-2', payload => {
-            let resetBuilder = updateBuilder()
+            let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
 
-            return updateBuilder;
+            return builder;
         });
 
         let MyComponent = san.defineComponent({
@@ -126,11 +127,11 @@ describe('Connect san component', () => {
 
     it('dispatch action method should connect to component "actions" member, object mapActions', done => {
         store.addAction('for-connect-3', payload => {
-            let resetBuilder = updateBuilder()
+            let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
 
-            return updateBuilder;
+            return builder;
         });
 
         let MyComponent = san.defineComponent({
@@ -173,11 +174,11 @@ describe('Connect san component', () => {
 
     it('dispatch action method should connect to component "actions" member, array mapActions', done => {
         store.addAction('for-connect-4', payload => {
-            let resetBuilder = updateBuilder()
+            let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
 
-            return updateBuilder;
+            return builder;
         });
 
         let MyComponent = san.defineComponent({
@@ -203,7 +204,7 @@ describe('Connect san component', () => {
         let u = wrap.getElementsByTagName('u')[0];
         expect(u.title).toBe('errorrik-errorrik@gmail.com');
 
-        myComponent.actions.['for-connect-4']({
+        myComponent.actions['for-connect-4']({
             name: 'erik',
             email: 'erik@gmail.com'
         });
