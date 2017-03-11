@@ -1,6 +1,6 @@
 {
   "name": "san-store",
-  "version": "0.0.1",
+  "version": "1.0.0-rc.1",
   "description": "Application State Management for San",
   "scripts": {
     "build": "rm -rf dist && webpack && uglifyjs dist/san-store.source.js -mco dist/san-store.js",
@@ -13,7 +13,8 @@
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-es2016": "^6.16.0",
     "glob": "^7.1.1",
-    "san": "^3.0.3-rc.6",
+    "san": "^3.0.3-rc.8",
+    "san-update": "2.0.0-rc.1",
     "uglify-js": "^2.7.5",
     "webpack": "^2.2.0-rc.3",
     "webpack-dev-server": "^2.2.0-rc.0"
@@ -25,8 +26,9 @@
     "dist"
   ],
   "dependencies": {
-    "san-update": "^1.4.0",
-    "mini-event": "^2.3.0"
+  },
+  "peerDependencies": {
+    "san-update": "2.x"
   },
   "author": "errorrik",
   "repository": {
