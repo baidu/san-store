@@ -176,7 +176,6 @@ store.addActions({
         }
     }
 });
-```
 
 store.dispatch('initCount', 10);
 ```
