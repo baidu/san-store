@@ -5,6 +5,8 @@
 
 [San](https://ecomfe.github.io/san/) 框架的官方应用状态管理套件。
 
+![flow](doc/flow.png)
+
 > 提示：使用 san-store 需要同时使用 [san-update](https://github.com/ecomfe/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
 
 
