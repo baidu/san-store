@@ -28,12 +28,12 @@ $ npm i san-store
 
 ```javascript
 import {store, connect} form 'san-store';
-import {macro} from 'san-update';
+import {builder} from 'san-update';
 
 
 store.addActions({
     changeUserName(name) {
-        return macro().set('user.name', name);
+        return builder().set('user.name', name);
     }
 });
 
@@ -59,11 +59,11 @@ webpack 环境配置网上有太多文章，在此不赘述了
 var sanStore = require('san-store');
 var store = sanStore.store;
 var connect = sanStore.connect;
-var macro = require('san-update').macro;
+var builder = require('san-update').builder;
 
 store.addActions({
     changeUserName: function (name) {
-        return macro().set('user.name', name);
+        return builder().set('user.name', name);
     }
 });
 
@@ -100,22 +100,30 @@ require.config({
 Store和默认实例
 ----
 
-一个应用具有一个唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
+一个应用具有唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
 
 ```javascript
 import {store} form 'san-store';
 ```
 
+通过 `get` 方法，可以获取 store 中的状态数据。
 
-通过 store 实例的 `addAction` 或 `addActions` 方法可以添加 action。
 
 ```javascript
-store.addAction('changeUserName', name => macro().set('user.name', name));
+let appstates = store.get();
+console.log(appstates.user.name);
+```
+
+
+store 并没有提供修改状态数据的方法，修改状态数据只能通过 dispatch action 来做到，具体细节请参考 [Action](#action) 章节。通过 `addAction` 或 `addActions` 方法可以添加 action。
+
+```javascript
+store.addAction('changeUserName', name => builder().set('user.name', name));
 
 
 store.addActions({
     changeUserName(name) {
-        return macro().set('user.name', name);
+        return builder().set('user.name', name);
     }
 });
 ```
@@ -136,17 +144,58 @@ let myStore = new Store({
 
     actions: {
         changeUserName(name) {
-            return macro().set('user.name', name);
+            return builder().set('user.name', name);
         }
     }
 })
 ```
 
-本节最后，还是要强调下，应用开发应当遵循 **一个应用具有一个唯一的应用状态源**。说白了就是 **要按常理出牌** 啊。
+本节最后，还是要强调下，应用开发应当遵循 **一个应用具有唯一的应用状态源**。说白了就是 **要按常理出牌**。
 
 
 Action
 ----
+
+Action 是 san-store 最重要的组成部分之一，它：
+
+1. 是 store 更新状态的唯一入口
+1. 在一个 store 内每个 action 具有唯一名称，通过名称 dispatch
+1. 是同步的，这使得状态更新可被记录、被追溯和重放
+
+
+Action 是一个函数，通过 dispatch 执行。其接收一个 payload，返回一个 san-update 的 builder 对象。store 使用 builder 对象生成状态变更函数，并执行它，使 store 内部的状态得到更新。当然，如果当前 action 不期望对 store 的状态进行更新，可以不返回 builder 对象。
+
+```javascript
+store.addAction('changeUserName', name => builder().set('user.name', name));
+
+
+store.addActions({
+    initCount(count) {
+        if (this.get().count == null) {
+            return builder().set('count', count);
+        }
+    }
+});
+```
+
+store.dispatch('initCount', 10);
+```
+
+
+san-update 是一个 Immutable 的更新对象库，其提供了一些更新函数（如set、push等），通过 `newObj = set(oldObj, 'x', 1)` 的使用形式让对象更新 Immutable。builder 是 san-update 提供的一个很好用的功能，通过 builder 你可以预定义一系列的数据更新操作，然后通过 `builder.build` 方法可以获得一个更新函数。san-store 就是利用这个功能，使用 action 返回的 builder 生成对象更新函数，再调用它进行 store 内部状态更新。
+
+san-update 的 builder 支持预定义所有 san-update 支持的数据操作，常用的有：
+
+- apply: 对现有数据项应用更新
+- set: 设置数据项
+- push: 数组push操作
+- pop: 数组pop操作
+- unshift: 数组unshift操作
+- shift: 数组shift操作
+- splice: 数组splice操作
+
+
+使用前请阅读 [使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 文档进行详细了解。
 
 
 
