@@ -8,6 +8,13 @@
 > 提示：使用 san-store 需要同时使用 [san-update](https://github.com/ecomfe/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
 
 
+- [下载](#下载)  
+- [使用](#使用)  
+- [为什么要进行应用状态管理](#为什么要进行应用状态管理)  
+- [Store和默认实例](#store和默认实例)  
+- [Action](#action)  
+- [组件的connect](#组件的connect)  
+
 
 下载
 ----
