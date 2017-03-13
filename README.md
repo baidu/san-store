@@ -94,6 +94,8 @@ require.config({
 为什么要进行应用状态管理
 ----
 
+啊？这还用说啊？
+
 
 Store和默认实例
 ----
@@ -130,7 +132,7 @@ connect.san(
 ```
 
 
- `connect.san` 方法的签名为，mapStates, mapActions
+ `connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
 
 
 ### mapStates
@@ -162,7 +164,6 @@ connect.san(
 
 
 `mapActions` 的 key 是要映射到组件 actions 成员上的方法名，value 是 action 的名称。
-
 
 
 ```javascript
