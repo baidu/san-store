@@ -100,6 +100,50 @@ require.config({
 Store和默认实例
 ----
 
+一个应用具有一个唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
+
+```javascript
+import {store} form 'san-store';
+```
+
+
+通过 store 实例的 `addAction` 或 `addActions` 方法可以添加 action。
+
+```javascript
+store.addAction('changeUserName', name => macro().set('user.name', name));
+
+
+store.addActions({
+    changeUserName(name) {
+        return macro().set('user.name', name);
+    }
+});
+```
+
+
+当然，你也可以通过 new Store 创建自己的 Store 实例。创建时可以传入初始化数据和声明 actions。
+
+```javascript
+import {Store} form 'san-store';
+
+
+let myStore = new Store({
+    initData: {
+        user: {
+            name: 'your name'
+        }
+    },
+
+    actions: {
+        changeUserName(name) {
+            return macro().set('user.name', name);
+        }
+    }
+})
+```
+
+本节最后，还是要强调下，应用开发应当遵循 **一个应用具有一个唯一的应用状态源**。说白了就是 **要按常理出牌** 啊。
+
 
 Action
 ----
@@ -131,8 +175,10 @@ connect.san(
 )(UserNameEditor);
 ```
 
+`connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
 
- `connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
+> 提示：san-store 只提供了对默认 store 实例的 connect 功能
+
 
 
 ### mapStates
