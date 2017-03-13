@@ -101,6 +101,9 @@ require.config({
 为什么要进行应用状态管理
 ----
 
+![why use](doc/why-use.png)
+
+
 啊？这还用说啊？
 
 
