@@ -1,6 +1,7 @@
 # san-store
 
 [![NPM version](http://img.shields.io/npm/v/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
+[![Build Status](https://img.shields.io/circleci/project/ecomfe/san-store/master.svg?style=flat-square)](https://circleci.com/gh/ecomfe/san-store/tree/master)
 [![License](https://img.shields.io/github/license/ecomfe/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
 
 [San](https://ecomfe.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
