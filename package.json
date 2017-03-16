@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rm -rf dist && webpack && uglifyjs dist/san-store.source.js -mco dist/san-store.js",
     "test-server": "webpack-dev-server --config test/webpack.config.js --history-api-fallback --host 0.0.0.0 --port 8384",
-    "test": "npm run test-server && open http://0.0.0.0:8384/test/"
+    "test": "karma start test/karma.config.js"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",
@@ -17,7 +17,14 @@
     "san-update": "2.0.0-rc.1",
     "uglify-js": "^2.7.5",
     "webpack": "^2.2.0-rc.3",
-    "webpack-dev-server": "^2.2.0-rc.0"
+    "webpack-dev-server": "^2.2.0-rc.0",
+    "jasmine": "^2.5.2",
+    "jasmine-core": "^2.5.2",
+    "karma": "^1.1.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-jasmine": "^1.0.2",
+    "karma-sourcemap-loader": "^0.3.0",
+    "karma-webpack": "^2.0.1"
   },
   "main": "dist/san-store.source.js",
   "unpkg": "dist/san-store",
