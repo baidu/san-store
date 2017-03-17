@@ -18,6 +18,10 @@ export default function parseName(source) {
         return source;
     }
 
+    if (typeof source !== 'string') {
+        return [];
+    }
+
     // 这个简易的非状态机的实现是有缺陷的
     // 比如 a['dd.cc'].b 这种就有问题了，不过我们不考虑这种场景
     let terms = source.split('.');

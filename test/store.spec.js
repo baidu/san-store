@@ -11,8 +11,10 @@ describe('Store', () => {
             }
         });
 
-        expect(store.get().name).toBe('errorrik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState('name')).toBe('errorrik');
+        expect(store.getState('emails[0]')).toBe('errorrik@gmail.com');
     });
 
     it('can data change by dispatch action', () => {
@@ -28,11 +30,11 @@ describe('Store', () => {
             }
         });
 
-        expect(store.get().name).toBe('errorrik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
 
         store.dispatch('changeName', 'erik');
-        expect(store.get().name).toBe('erik');
+        expect(store.getState().name).toBe('erik');
     });
 
     it('listenable', () => {
@@ -48,8 +50,8 @@ describe('Store', () => {
             }
         });
 
-        expect(store.get().name).toBe('errorrik');
-        expect(store.get().emails.length).toBe(1);
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails.length).toBe(1);
 
 
         let isChangeFired;
@@ -60,9 +62,9 @@ describe('Store', () => {
 
         store.dispatch('change', {name: 'erik', email: 'erik168@163.com'});
 
-        expect(store.get().name).toBe('erik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
-        expect(store.get().emails[1]).toBe('erik168@163.com');
+        expect(store.getState().name).toBe('erik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().emails[1]).toBe('erik168@163.com');
         expect(isChangeFired).toBeTruthy();
     });
 
@@ -79,8 +81,8 @@ describe('Store', () => {
             }
         });
 
-        expect(store.get().name).toBe('errorrik');
-        expect(store.get().emails.length).toBe(1);
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails.length).toBe(1);
 
 
         let fireTimes = 0;
@@ -93,15 +95,15 @@ describe('Store', () => {
 
         store.dispatch('change', {name: 'erik', email: 'erik168@163.com'});
 
-        expect(store.get().name).toBe('erik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
-        expect(store.get().emails[1]).toBe('erik168@163.com');
+        expect(store.getState().name).toBe('erik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().emails[1]).toBe('erik168@163.com');
         expect(fireTimes).toBe(1);
 
         store.unlisten(listener);
         store.dispatch('change', {name: 'e', email: 'e@e.com'});
-        expect(store.get().name).toBe('e');
-        expect(store.get().emails[2]).toBe('e@e.com');
+        expect(store.getState().name).toBe('e');
+        expect(store.getState().emails[2]).toBe('e@e.com');
         expect(fireTimes).toBe(1);
     });
 
@@ -113,12 +115,12 @@ describe('Store', () => {
             }
         });
 
-        expect(store.get().name).toBe('errorrik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
 
         store.addAction('changeName', name => updateBuilder().set('name', name));
         store.dispatch('changeName', 'erik');
-        expect(store.get().name).toBe('erik');
+        expect(store.getState().name).toBe('erik');
     });
 
     it('can add action after store created by "addActions"', () => {
@@ -129,8 +131,8 @@ describe('Store', () => {
             }
         });
 
-        expect(store.get().name).toBe('errorrik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
 
         store.addActions({
             changeName(name) {
@@ -144,9 +146,9 @@ describe('Store', () => {
         store.dispatch('changeName', 'erik');
         store.dispatch('addEmail', 'erik168@163.com');
 
-        expect(store.get().name).toBe('erik');
-        expect(store.get().emails[0]).toBe('errorrik@gmail.com');
-        expect(store.get().emails[1]).toBe('erik168@163.com');
+        expect(store.getState().name).toBe('erik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState().emails[1]).toBe('erik168@163.com');
     });
 
 

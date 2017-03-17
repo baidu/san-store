@@ -110,23 +110,11 @@ export default function connect(mapStates, mapActions) {
  * @return {*}
  */
 function getStateValue(info) {
-    let states = store.get();
-
     if (typeof info.getter === 'function') {
-        return info.getter(states);
+        return info.getter(store.getState());
     }
     else if (info.stateName) {
-        let value = states;
-        for (let i = 0; value && i < info.stateName.length; i++) {
-            if (typeof value === 'object' && value != null) {
-                value = value[info.stateName[i]];
-            }
-            else {
-                return null;
-            }
-        }
-
-        return value;
+        return store.getState(info.stateName);
     }
 
     return null;

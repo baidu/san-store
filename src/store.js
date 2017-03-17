@@ -52,12 +52,20 @@ export default class Store {
     }
 
     /**
-     * 获取容器数据
+     * 获取 state
      *
-     * @return {Object}
+     * @param {string} name state名称
+     * @return {*}
      */
-    get(name) {
-        return this.raw;
+    getState(name) {
+        name = parseName(name);
+
+        let value = this.raw;
+        for (let i = 0, l = name.length; value != null && i < l; i++) {
+            value = value[name[i]];
+        }
+
+        return value;
     }
 
     /**
