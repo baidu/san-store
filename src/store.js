@@ -10,21 +10,22 @@
 import flattenDiff from './flatten-diff';
 import parseName from './parse-name';
 
-const GUID_CHARS = 'qwertyuiopasdfghjklzxcvbnm'.split();
+/**
+ * 唯一id的起始值
+ *
+ * @inner
+ * @type {number}
+ */
+let guidIndex = 1;
 
-function randomChars() {
-    let chars = '';
+/**
+ * 获取唯一id
+ *
+ * @inner
+ * @return {string} 唯一id
+ */
+let guid = () => (++guidIndex).toString();
 
-    for (let i = 0; i < 3; i++) {
-        chars += GUID_CHARS[Math.floor(Math.random()*25)];
-    }
-
-    return chars;
-}
-
-function guid() {
-    return (new Date()).getTime() + randomChars();
-}
 
 /**
  * Store 类，应用程序状态数据的容器
@@ -38,17 +39,21 @@ export default class Store {
      * @param {Object?} options 初始化参数
      * @param {Object?} options.initData 容器的初始化数据
      * @param {Object?} options.actions 容器的action函数集合
+     * @param {boolean?} options.log 是否记录日志
      */
     constructor(
         {
             initData = {},
-            actions = {}
+            actions = {},
+            log = true
         } = {}
     ) {
         this.raw = initData;
         this.actions = actions;
-        this.logs = [];
+        this.log = log;
+
         this.listeners = [];
+        this.actionCtrl = new ActionControl(this);
     }
 
     /**
@@ -143,51 +148,154 @@ export default class Store {
      * @param {*} payload payload
      */
     dispatch(name, payload) {
+        this._dispatch(name, payload);
+    }
+
+    /**
+     * action 的 dispatch 入口
+     *
+     * @private
+     * @param {string} name action名称
+     * @param {*} payload payload
+     * @param {string} parentId 所属父action的id
+     */
+    _dispatch(name, payload, parentId) {
         let action = this.actions[name];
         let actionId = guid();
 
-        if (typeof action === 'function') {
-            this.log({
-                id: actionId,
-                name: name,
-                message: 'Action Start'
+        if (typeof action !== 'function') {
+            return;
+        }
+
+        this.actionCtrl.start(actionId, name, payload, parentId);
+
+        let context = {
+            getState: name => this.getState(name),
+            dispatch: (name, payload) => this._dispatch(name, payload, actionId)
+        };
+
+        let actionReturn = action.call(this, payload, context);
+        if (actionReturn && typeof actionReturn.then === 'function') {
+            actionReturn.then(updateBuilder => {
+                this.actionCtrl.done(actionId, updateBuilder);
             });
+        }
+        else {
+            this.actionCtrl.done(actionId, actionReturn);
+        }
+    }
+}
 
-            let macro = action.call(this, payload);
+/**
+ * Action 控制类，用于 Store 控制 Action 运行过程
+ *
+ * @class
+ */
+class ActionControl {
+    /**
+     * 构造函数
+     *
+     * @param {Store} store 所属的store实例
+     */
+    constructor(store) {
+        this.list = [];
+        this.len = 0;
+        this.index = {};
+        this.store = store;
 
-            if (macro && typeof macro.buildWithDiff === 'function') {
-                let oldRaw = this.raw;
-                let [data, diff] = macro.buildWithDiff()(oldRaw);
+        this.stateChangeLogs = [];
+    }
 
-                diff = flattenDiff(diff)
-                this.raw = data;
+    /**
+     * 开始运行 action
+     *
+     * @param {string} id action的id
+     * @param {string} name action 名称
+     * @param {*} payload payload
+     * @param {string?} parentId 父action的id
+     */
+    start(id, name, payload, parentId) {
+        let actionInfo = {
+            id,
+            name,
+            parentId,
+            childs: []
+        };
 
-                this.log({
-                    id: actionId,
-                    name: name,
-                    message: 'Store Update',
-                    old: oldRaw,
-                    diff: diff
-                });
+        if (this.store.log) {
+            actionInfo.startTime = (new Date()).getTime();
+            actionInfo.payload = payload;
+        }
 
-                this._fire(diff);
-            }
+        this.list[this.len] = actionInfo;
+        this.index[id] = this.len++;
 
-            this.log({
-                id: actionId,
-                name: name,
-                message: 'Action Done'
-            });
+        if (parentId) {
+            this.getById(parentId).childs.push(id);
         }
     }
 
     /**
-     * 记录日志
+     * action 运行完成
      *
-     * @param {string|Object} info 日志信息，可能是字符串，也可能是一个操作信息对象
+     * @param {string} id action的id
+     * @param {Function?} updateBuilder 状态更新函数生成器
      */
-    log(info) {
-        this.logs.push(info);
+    done(id, updateBuilder) {
+        let updateInfo;
+        let actionInfo = this.getById(id);
+
+        if (updateBuilder && typeof updateBuilder.buildWithDiff === 'function') {
+            let oldValue = this.store.raw;
+            updateInfo = updateBuilder.buildWithDiff()(oldValue);
+            updateInfo[1] = flattenDiff(updateInfo[1]);
+            this.store.raw = updateInfo[0];
+
+            if (this.store.log) {
+                this.stateChangeLogs.push({
+                    oldValue,
+                    newValue: updateInfo[0],
+                    diff: updateInfo[1],
+                    id: actionInfo.id
+                });
+            }
+        }
+
+        actionInfo.selfDone = true;
+        this.detectDone(id);
+
+        if (updateInfo) {
+            this.store._fire(updateInfo[1]);
+        }
+    }
+
+    /**
+     * 探测 action 是否完全运行完成，只有子 action 都运行完成才算运行完成
+     *
+     * @param {string} id action的id
+     */
+    detectDone(id) {
+        let actionInfo = this.getById(id);
+        let childsDone = true;
+        actionInfo.childs.forEach(child => {
+            childsDone = this.getById(child).done && childsDone;
+        });
+
+        if (childsDone && actionInfo.selfDone) {
+            actionInfo.done = true;
+
+            if (this.store.log) {
+                actionInfo.endTime = (new Date()).getTime()
+            }
+
+            if (actionInfo.parentId) {
+                this.detectDone(actionInfo.parentId);
+            }
+        }
+    }
+
+    getById(id) {
+        return this.list[this.index[id]]
     }
 }
 

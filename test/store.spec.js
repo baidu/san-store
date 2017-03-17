@@ -151,5 +151,190 @@ describe('Store', () => {
         expect(store.getState().emails[1]).toBe('erik168@163.com');
     });
 
+    it('update depend on current state', () => {
+        let store = new Store({
+            initData: {
+                name: 'errorrik',
+                emails: ['errorrik@gmail.com']
+            }
+        });
+
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+
+        store.addActions({
+            change(info, {getState}) {
+                let builder = updateBuilder().set('name', info.name);
+
+                if (!getState('emails[0]')) {
+                    builder = builder.push('emails', info.email);
+                }
+
+                return builder;
+            }
+        });
+        store.dispatch('change', {
+            name: 'erik',
+            email: 'erik168@163.com'
+        });
+
+        expect(store.getState().name).toBe('erik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+        expect(store.getState('emails').length).toBe(1);
+    });
+
+
+    it('dispatch async action', done => {
+        let store = new Store({
+            initData: {
+                name: 'errorrik',
+                emails: ['errorrik@gmail.com']
+            }
+        });
+
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+
+        store.addActions({
+            changeName(name) {
+                return new Promise(function (resolve) {
+                    setTimeout(() => {
+                        resolve(updateBuilder().set('name', name));
+                    }, 200);
+                });
+            }
+        });
+        store.dispatch('changeName', 'erik');
+
+        setTimeout(() => {
+            expect(store.getState().name).toBe('erik');
+            expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+
+            done();
+        }, 500);
+    });
+
+    it('dispatch async action in action', done => {
+        let store = new Store({});
+
+        expect(store.getState().list == null).toBeTruthy();
+
+        store.addActions({
+            fetchList(payload, {dispatch, getState}) {
+                dispatch('loadingState', true);
+
+                return requestList().then(list => {
+                    dispatch('loadingState', false);
+
+                    expect(getState('loading')).not.toBeTruthy();
+                    expect(getActionInfo().done).not.toBeTruthy();
+                    return updateBuilder().set('list', list);
+                });
+            },
+
+            loadingState(state) {
+                return updateBuilder().set('loading', state);
+            }
+        });
+
+        store.dispatch('fetchList');
+        expect(store.getState('loading')).toBeTruthy();
+        expect(getActionInfo().done).not.toBeTruthy();
+
+        setTimeout(() => {
+            expect(store.getState('loading')).not.toBeTruthy();
+            expect(store.getState('list').length).toBe(2);
+            expect(store.getState('list[0]')).toBe(1);
+            expect(getActionInfo().done).toBeTruthy();
+
+            done();
+        }, 500);
+
+        function requestList() {
+            return new Promise(function (resolve) {
+                setTimeout(() => {
+                    resolve([1, 2]);
+                }, 100);
+            });
+        }
+
+        function getActionInfo() {
+            let actionInfo;
+
+            store.actionCtrl.list.forEach(item => {
+                if (item.name === 'fetchList') {
+                    actionInfo = item;
+                }
+            });
+            return actionInfo;
+        }
+    });
+
+    it('children action not done, action shouldnot be mark done', done => {
+        let store = new Store({});
+
+        expect(store.getState().list == null).toBeTruthy();
+
+        store.addActions({
+            fetchList(payload, {dispatch, getState}) {
+                dispatch('loadingState', true);
+
+                return requestList().then(list => {
+                    dispatch('loadingState', false);
+                    dispatch('sleep');
+
+                    expect(getState('loading')).not.toBeTruthy();
+                    expect(getActionInfo().done).not.toBeTruthy();
+                    return updateBuilder().set('list', list);
+                });
+            },
+
+            loadingState(state) {
+                return updateBuilder().set('loading', state);
+            },
+
+            sleep() {
+                return new Promise(resolve => {
+                    setTimeout(() => {resolve()}, 400);
+                });
+            }
+        });
+
+        store.dispatch('fetchList');
+        expect(store.getState('loading')).toBeTruthy();
+        expect(getActionInfo().done).not.toBeTruthy();
+
+        setTimeout(() => {
+            expect(store.getState('loading')).not.toBeTruthy();
+            expect(store.getState('list').length).toBe(2);
+            expect(store.getState('list[0]')).toBe(1);
+            expect(getActionInfo().done).not.toBeTruthy();
+        }, 400);
+
+        setTimeout(() => {
+            expect(getActionInfo().done).toBeTruthy();
+            done();
+        }, 1000);
+
+        function requestList() {
+            return new Promise(function (resolve) {
+                setTimeout(() => {
+                    resolve([1, 2]);
+                }, 100);
+            });
+        }
+
+        function getActionInfo() {
+            let actionInfo;
+
+            store.actionCtrl.list.forEach(item => {
+                if (item.name === 'fetchList') {
+                    actionInfo = item;
+                }
+            });
+            return actionInfo;
+        }
+    });
+
 
 });
