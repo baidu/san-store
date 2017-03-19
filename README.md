@@ -222,26 +222,45 @@ Action
 
 Action 是 san-store 最重要的组成部分之一，它：
 
-1. 是 store 更新状态的唯一入口
 1. 在一个 store 内每个 action 具有唯一名称，通过名称 dispatch
-1. 是同步的，这使得状态更新可被记录、被追溯和重放
+1. 是 store 更新状态的唯一入口
+1. 状态更新是同步的，这使得状态更新可依赖当前状态环境，可被记录、被追溯和重放
 
 
-Action 是一个函数，通过 dispatch 执行。其接收一个 payload，返回一个 san-update 的 builder 对象。store 使用 builder 对象生成状态变更函数，并执行它，使 store 内部的状态得到更新。当然，如果当前 action 不期望对 store 的状态进行更新，可以不返回 builder 对象。
+如果你使用了 san-store，**Action 应该是你业务组件的唯一出口**：用户操作事件等需要改变应用状态时，都应该 dispatch Action。它的签名如下：
+
+```
+{updateBuilder?} function ({*}payload, {{Function}getState, {Function}dispatch})
+```
+
+### 变更应用状态
+
+
+Action 接收一个 payload，返回一个 san-update 的 builder 对象。store 使用 builder 对象生成状态变更函数，并执行它，使 store 内部的状态得到更新。当然，如果当前 action 不期望对 store 的状态进行更新，可以不返回 builder 对象。
 
 ```javascript
-store.addAction('changeUserName', name => builder().set('user.name', name));
+import {updateBuilder} from 'san-update';
+
+store.addAction('changeUserName', function (name) {
+    return updateBuilder().set('user.name', name);
+});
+
+// 通过名称 dispatch
+store.dispatch('changeUserName', 'erik');
 
 
+// 也可以使用 addActions 一次添加多个 Action
 store.addActions({
+    changeUserName(name) {
+        return updateBuilder().set('user.name', name);
+    },
+
     initCount(count) {
-        if (this.get().count == null) {
-            return builder().set('count', count);
+        if (getState('count') == null) {
+            return updateBuilder().set('count', count);
         }
     }
 });
-
-store.dispatch('initCount', 10);
 ```
 
 
@@ -259,6 +278,122 @@ san-update 的 builder 支持预定义所有 san-update 支持的数据操作，
 
 
 使用前请阅读 [使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 文档进行详细了解。
+
+
+### 获取当前应用状态
+
+Action 的第二个参数是一个对象，其中的 getState 方法可以用于获得当前 store 中的应用状态。这个方法是 this 无关的。
+
+
+```javascript
+import {updateBuilder} from 'san-update';
+
+store.addAction('initCount', function (count, {getState}) {
+    if (getState('count') == null) {
+        return updateBuilder().set('count', count);
+    }
+});
+
+store.dispatch('initCount', 10);
+```
+
+如果我们的更新操作仅依赖于当前数据状态项的值，也可以使用 san-update 提供的 apply 方法。
+
+
+```javascript
+import {updateBuilder} from 'san-update';
+
+store.addAction('initCount', function (count) {
+    // apply 意思是：在原有的值上应用新的值
+    return updateBuilder().apply('count', oldValue => {
+        return oldValue == null ? count : oldValue;
+    });
+});
+
+store.dispatch('initCount', 10);
+```
+
+### 异步过程
+
+同步的 Action 返回一个 updateBuilder，并立即更新数据状态，但我们经常会遇到异步的场景，常见的比如请求数据、返回并更新应用状态。Action 在设计上作为 **业务组件的唯一出口**， 对异步支持的方式如下：
+
+1. 返回一个 Promise 时，当前 Action 为异步
+2. 返回一个 updateBuilder 或什么都不返回时，当前 Action 为异步
+
+下面是一个简单的例子： 一个列表请求的行为，此时要显示 loading，在请求返回时更新应用状态中的列表项，同时隐藏 loading。
+
+```javascript
+import {updateBuilder} from 'san-update';
+
+store.addActions({
+    fetchList(page, {getState, dispatch}) {
+        dispatch('showLoading');
+        dispatch('updateCurrentPage', page);
+
+        return requestList(page).then(list => {
+            if (getState('currentPage') === page) {
+                dispatch('updateList', list);
+                dispatch('hideLoading');
+            }
+        });
+    },
+
+    showLoading() {
+        return updateBuilder().set('loading', true);
+    },
+
+    hideLoading() {
+        return updateBuilder().set('loading', false);
+    },
+
+    updateCurrentPage(page) {
+        return updateBuilder().set('currentPage', page);
+    },
+
+    updateList(list) {
+        return updateBuilder().set('list', list);
+    }
+});
+
+// 这里模拟一下，意思意思
+function requestList(page) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            let pageList = [1, 2, 3];
+            resolve(pageList);
+        }, 500);
+    });
+}
+```
+
+例子中有下面几个要点：
+
+1. 异步 Action 可以多次 dispatch 其他的 Action，通过第二个参数对象中的 dispatch 方法。这个方法和 getState 一样，也是 this 无关的。
+2. fetchList 中马上 updateCurrentPage，在请求返回时使用 getState 方法对 currentPage 判断，能够避免用户快速多次点击页码时发起多个 list 请求，请求返回的顺序不同可能导致问题。
+3. 异步 Action 没有更新应用状态的能力，想要更新应用状态必须 dispatch 同步 Action。下面的代码说明了为什么，感兴趣可以看看。
+
+```javascript
+store.addActions({
+    fetchList(page, {getState, dispatch}) {
+        dispatch('showLoading');
+        dispatch('updateCurrentPage', page);
+
+        return requestList(page).then(list => {
+            if (getState('currentPage') === page) {
+                dispatch('hideLoading');
+                
+                // 如果异步 Action 支持在 promise 中返回 updateBuilder 并更新状态
+                // 这里的代码就可能导致问题。因为 promise.then 不是马上运行的
+                // 这里的 currentPage 不代表 updateBuilder 运行时的 currentPage
+                // currentPage 可能被另外一个 dispatch fetchList 改掉
+                // 所以这里应该 dispatch 一个同步的 Action 让应用状态即时完成变更
+                // dispatch('updateList', list);  // good
+                return updateBuilder().set('list', list); // warning
+            }
+        });
+    }
+});
+```
 
 
 
