@@ -132,7 +132,6 @@ function stateNeedUpdate(info, diff){
         return true;
     }
     else if (info.stateName) {
-        let result = false;
         let stateNameLen = info.stateName.length;
 
         for (let i = 0, diffLen = diff.length; i < diffLen; i++) {
