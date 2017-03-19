@@ -45,9 +45,24 @@ export default function connect(mapStates, mapActions) {
     }
 
     return function (ComponentClass) {
+        let componentProto;
+
+        switch (typeof ComponentClass) {
+            case 'function':
+                componentProto = ComponentClass.prototype;
+                break;
+            case 'object':
+                componentProto = ComponentClass;
+                break;
+        }
+
+        if (!componentProto) {
+            return;
+        }
+
         // map states
-        let inited = ComponentClass.prototype.inited;
-        ComponentClass.prototype.inited = function () {
+        let inited = componentProto.inited;
+        componentProto.inited = function () {
             // init data
             mapStateInfo.forEach(info => {
                 this.data.set(info.dataName, getStateValue(info));
@@ -68,8 +83,8 @@ export default function connect(mapStates, mapActions) {
             }
         };
 
-        let disposed = ComponentClass.prototype.disposed;
-        ComponentClass.prototype.disposed = function () {
+        let disposed = componentProto.disposed;
+        componentProto.disposed = function () {
             store.unlisten(this.storeListener);
             this.storeListener = null;
 
@@ -79,12 +94,12 @@ export default function connect(mapStates, mapActions) {
         };
 
         // map actions
-        if (!ComponentClass.prototype.actions) {
-            ComponentClass.prototype.actions = {};
+        if (!componentProto.actions) {
+            componentProto.actions = {};
 
             if (mapActions instanceof Array) {
                 mapActions.forEach(actionName => {
-                    ComponentClass.prototype.actions[actionName] = function (payload) {
+                    componentProto.actions[actionName] = function (payload) {
                         store.dispatch(actionName, payload);
                     };
                 });
@@ -92,7 +107,7 @@ export default function connect(mapStates, mapActions) {
             else {
                 for (let key in mapActions) {
                     let actionName = mapActions[key];
-                    ComponentClass.prototype.actions[key] = function (payload) {
+                    componentProto.actions[key] = function (payload) {
                         store.dispatch(actionName, payload);
                     };
                 }
