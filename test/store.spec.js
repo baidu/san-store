@@ -184,7 +184,7 @@ describe('Store', () => {
     });
 
 
-    it('dispatch async action', done => {
+    it('dispatch async action, promise resolve value is unuseful', done => {
         let store = new Store({
             initData: {
                 name: 'errorrik',
@@ -196,12 +196,17 @@ describe('Store', () => {
         expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
 
         store.addActions({
-            changeName(name) {
+            changeName(name, {dispatch}) {
                 return new Promise(function (resolve) {
                     setTimeout(() => {
-                        resolve(updateBuilder().set('name', name));
+                        dispatch('setName', name);
+                        resolve(updateBuilder().set('name', 'hello'));
                     }, 200);
                 });
+            },
+
+            setName(name) {
+                return updateBuilder().set('name', name);
             }
         });
         store.dispatch('changeName', 'erik');
@@ -228,8 +233,12 @@ describe('Store', () => {
 
                     expect(getState('loading')).not.toBeTruthy();
                     expect(getActionInfo().done).not.toBeTruthy();
-                    return updateBuilder().set('list', list);
+                    dispatch('updateList', list);
                 });
+            },
+
+            updateList(list) {
+                return updateBuilder().set('list', list);
             },
 
             loadingState(state) {
@@ -276,21 +285,39 @@ describe('Store', () => {
         expect(store.getState().list == null).toBeTruthy();
 
         store.addActions({
-            fetchList(payload, {dispatch, getState}) {
-                dispatch('loadingState', true);
+            fetchList(page, {getState, dispatch}) {
+                dispatch('showLoading');
+                dispatch('updateCurrentPage', page);
+                expect(getState('currentPage')).toBe(page);
 
-                return requestList().then(list => {
-                    dispatch('loadingState', false);
-                    dispatch('sleep');
+                return requestList(page).then(list => {
+                    expect(getState('currentPage')).toBe(page);
 
-                    expect(getState('loading')).not.toBeTruthy();
-                    expect(getActionInfo().done).not.toBeTruthy();
-                    return updateBuilder().set('list', list);
+                    if (getState('currentPage') === page) {
+                        dispatch('sleep');
+                        dispatch('hideLoading');
+
+                        expect(getState('loading')).not.toBeTruthy();
+                        expect(getActionInfo().done).not.toBeTruthy();
+                        dispatch('updateList', list);
+                    }
                 });
             },
 
-            loadingState(state) {
-                return updateBuilder().set('loading', state);
+            showLoading() {
+                return updateBuilder().set('loading', true);
+            },
+
+            hideLoading() {
+                return updateBuilder().set('loading', false);
+            },
+
+            updateCurrentPage(page) {
+                return updateBuilder().set('currentPage', page);
+            },
+
+            updateList(list) {
+                return updateBuilder().set('list', list);
             },
 
             sleep() {
@@ -300,13 +327,13 @@ describe('Store', () => {
             }
         });
 
-        store.dispatch('fetchList');
+        store.dispatch('fetchList', 1);
         expect(store.getState('loading')).toBeTruthy();
         expect(getActionInfo().done).not.toBeTruthy();
 
         setTimeout(() => {
             expect(store.getState('loading')).not.toBeTruthy();
-            expect(store.getState('list').length).toBe(2);
+            expect(store.getState('list').length).toBe(1);
             expect(store.getState('list[0]')).toBe(1);
             expect(getActionInfo().done).not.toBeTruthy();
         }, 400);
@@ -316,10 +343,10 @@ describe('Store', () => {
             done();
         }, 1000);
 
-        function requestList() {
+        function requestList(page) {
             return new Promise(function (resolve) {
                 setTimeout(() => {
-                    resolve([1, 2]);
+                    resolve([page]);
                 }, 100);
             });
         }

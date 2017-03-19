@@ -53,6 +53,7 @@ export default class Store {
         this.log = log;
 
         this.listeners = [];
+        this.stateChangeLogs = [];
         this.actionCtrl = new ActionControl(this);
     }
 
@@ -173,15 +174,38 @@ export default class Store {
             getState: name => this.getState(name),
             dispatch: (name, payload) => this._dispatch(name, payload, actionId)
         };
-
         let actionReturn = action.call(this, payload, context);
-        if (actionReturn && typeof actionReturn.then === 'function') {
-            actionReturn.then(updateBuilder => {
-                this.actionCtrl.done(actionId, updateBuilder);
-            });
+
+        let updateInfo;
+        if (actionReturn) {
+            if (typeof actionReturn.then === 'function') {
+                actionReturn.then(() => {
+                    this.actionCtrl.done(actionId);
+                });
+                return;
+            }
+
+            if (typeof actionReturn.buildWithDiff === 'function') {
+                let oldValue = this.raw;
+                updateInfo = actionReturn.buildWithDiff()(oldValue);
+                updateInfo[1] = flattenDiff(updateInfo[1]);
+                this.raw = updateInfo[0];
+
+                if (this.log) {
+                    this.stateChangeLogs.push({
+                        oldValue,
+                        newValue: updateInfo[0],
+                        diff: updateInfo[1],
+                        id: actionId
+                    });
+                }
+            }
         }
-        else {
-            this.actionCtrl.done(actionId, actionReturn);
+
+        this.actionCtrl.done(actionId);
+
+        if (updateInfo) {
+            this._fire(updateInfo[1]);
         }
     }
 }
@@ -202,8 +226,6 @@ class ActionControl {
         this.len = 0;
         this.index = {};
         this.store = store;
-
-        this.stateChangeLogs = [];
     }
 
     /**
@@ -241,32 +263,9 @@ class ActionControl {
      * @param {string} id action的id
      * @param {Function?} updateBuilder 状态更新函数生成器
      */
-    done(id, updateBuilder) {
-        let updateInfo;
-        let actionInfo = this.getById(id);
-
-        if (updateBuilder && typeof updateBuilder.buildWithDiff === 'function') {
-            let oldValue = this.store.raw;
-            updateInfo = updateBuilder.buildWithDiff()(oldValue);
-            updateInfo[1] = flattenDiff(updateInfo[1]);
-            this.store.raw = updateInfo[0];
-
-            if (this.store.log) {
-                this.stateChangeLogs.push({
-                    oldValue,
-                    newValue: updateInfo[0],
-                    diff: updateInfo[1],
-                    id: actionInfo.id
-                });
-            }
-        }
-
-        actionInfo.selfDone = true;
+    done(id) {
+        this.getById(id).selfDone = true;
         this.detectDone(id);
-
-        if (updateInfo) {
-            this.store._fire(updateInfo[1]);
-        }
     }
 
     /**
