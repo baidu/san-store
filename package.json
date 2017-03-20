@@ -1,6 +1,6 @@
 {
   "name": "san-store",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Application State Management for San",
   "scripts": {
     "build": "rm -rf dist && webpack && uglifyjs dist/san-store.source.js -mco dist/san-store.js",
@@ -30,8 +30,7 @@
   "unpkg": "dist/san-store",
   "files": [
     "src",
-    "dist",
-    "README.md"
+    "dist"
   ],
   "dependencies": {
   },
