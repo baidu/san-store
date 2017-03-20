@@ -6,17 +6,23 @@
 
 [San](https://ecomfe.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
 
-![flow](doc/flow.png)
+![flow](https://raw.githubusercontent.com/ecomfe/san-store/master/doc/flow.png)
 
 > 提示：使用 san-store 需要同时使用 [san-update](https://github.com/ecomfe/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
 
 
 - [下载](#下载)  
 - [使用](#使用)  
+- [示例项目](#示例项目)  
 - [为什么要进行应用状态管理](#为什么要进行应用状态管理)  
 - [Store和默认实例](#store和默认实例)  
 - [Action](#action)  
+    - [变更应用状态](#变更应用状态)  
+    - [获取当前应用状态](#获取当前应用状态)  
+    - [异步过程](#异步过程)  
 - [组件的connect](#组件的connect)  
+    - [mapstates](#mapstates)  
+    - [mapActions](#mapactions)  
 
 
 下载
@@ -101,6 +107,12 @@ require.config({
 
 
 
+示例项目
+----
+
+从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos](https://github.com/ecomfe/san-store/tree/master/example/todos) 是如何在项目里使用 san-store 进行状态管理的示例项目。
+
+
 为什么要进行应用状态管理
 ----
 
@@ -112,7 +124,8 @@ require.config({
 
 那么，使用 san-store 进行应用状态管理，和自己在组件里完成所有事情，有什么区别呢？
 
-![why use](doc/why-use.png)
+
+![why use](https://raw.githubusercontent.com/ecomfe/san-store/master/doc/why-use.png)
 
 ### 自己管理你的应用状态
 
