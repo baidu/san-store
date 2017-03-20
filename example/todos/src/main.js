@@ -5,14 +5,14 @@ require('font-awesome/css/font-awesome.min.css')
 require('./main.css')
 
 // actions
-import './components/todo/action'
-import './components/category/action'
+import './todo/action'
+import './category/action'
 
 // route
-import List from './components/todo/List'
-import Form from './components/todo/Form'
-import AddCategory from './components/category/Add'
-import EditCategory from './components/category/Edit'
+import List from './todo/List'
+import Form from './todo/Form'
+import AddCategory from './category/Add'
+import EditCategory from './category/Edit'
 
 import {router} from 'san-router'
 

@@ -1,6 +1,6 @@
 import { store } from 'san-store'
 import { updateBuilder } from 'san-update'
-import service from '../../service'
+import service from '../service'
 
 store.addActions({
     fetchTodos(category, {getState, dispatch}) {

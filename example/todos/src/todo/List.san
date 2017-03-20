@@ -34,7 +34,7 @@
 
 <script>
 
-import { formatDate } from '../../filters'
+import { formatDate } from '../filters'
 import { Link } from 'san-router'
 import { connect } from 'san-store'
 
