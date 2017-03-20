@@ -16,7 +16,7 @@
     "moment": "^2.15.1",
     "san": "^3.0.3-rc.10",
     "san-router": "^1.0.1",
-    "san-update": "2.0.0-rc.1",
+    "san-update": "2.0.0",
     "san-store": "^1.0.0-rc.3"
   },
   "devDependencies": {

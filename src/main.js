@@ -22,7 +22,7 @@ export let store = new Store();
  *
  * @type {string}
  */
-export let version = '1.0.0-rc.3';
+export let version = '1.0.0-rc.4';
 
 export {Store};
 
