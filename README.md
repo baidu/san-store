@@ -279,10 +279,11 @@ store.addActions({
 
 san-update 是一个 Immutable 的更新对象库，其提供了一些更新函数（如set、push等），通过 `newObj = set(oldObj, 'x', 1)` 的使用形式让对象更新 Immutable。builder 是 san-update 提供的一个很好用的功能，通过 builder 你可以预定义一系列的数据更新操作，然后通过 `builder.build` 方法可以获得一个更新函数。san-store 就是利用这个功能，使用 action 返回的 builder 生成对象更新函数，再调用它进行 store 内部状态更新。
 
-san-update 的 builder 支持预定义所有 san-update 支持的数据操作，常用的有：
+san-update 的 builder 支持预定义所有 san-update 支持的数据操作，通过 [san-update文档：可用指令](https://github.com/ecomfe/san-update#可用指令) 可以查看所有操作类型。常用的有：
 
 - apply: 对现有数据项应用更新
 - set: 设置数据项
+- remove: 数组移除项
 - push: 数组push操作
 - pop: 数组pop操作
 - unshift: 数组unshift操作
@@ -290,7 +291,7 @@ san-update 的 builder 支持预定义所有 san-update 支持的数据操作，
 - splice: 数组splice操作
 
 
-使用前请阅读 [使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 文档进行详细了解。
+使用前请阅读 [san-update文档：使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 文档进行详细了解。
 
 
 ### 获取当前应用状态
