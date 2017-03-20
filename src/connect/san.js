@@ -65,18 +65,34 @@ export default function connect(mapStates, mapActions) {
         componentProto.inited = function () {
             // init data
             mapStateInfo.forEach(info => {
-                this.data.set(info.dataName, getStateValue(info));
+                if (typeof info.getter === 'function') {
+                    this.data.set(info.dataName, info.getter(store.getState()));
+                }
+                else {
+                    this.data.set(info.dataName, clone(store.getState(info.stateName)));
+                }
             });
 
             // listen store change
-            this.storeListener = diff => {
+            this._storeListener = diff => {
                 mapStateInfo.forEach(info => {
-                    if (stateNeedUpdate(info, diff)) {
-                        this.data.set(info.dataName, getStateValue(info));
+                    if (typeof info.getter === 'function') {
+                        this.data.set(info.dataName, info.getter(store.getState()));
+                        return;
+                    }
+
+                    let updateInfo = calcUpdateInfo(info, diff);
+                    if (updateInfo) {
+                        if (updateInfo.spliceArgs) {
+                            this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
+                        }
+                        else {
+                            this.data.set(updateInfo.componentData, clone(store.getState(updateInfo.storeData)));
+                        }
                     }
                 });
             };
-            store.listen(this.storeListener);
+            store.listen(this._storeListener);
 
             if (typeof inited === 'function') {
                 inited.call(this);
@@ -85,8 +101,8 @@ export default function connect(mapStates, mapActions) {
 
         let disposed = componentProto.disposed;
         componentProto.disposed = function () {
-            store.unlisten(this.storeListener);
-            this.storeListener = null;
+            store.unlisten(this._storeListener);
+            this._storeListener = null;
 
             if (typeof disposed === 'function') {
                 disposed.call(this);
@@ -118,21 +134,29 @@ export default function connect(mapStates, mapActions) {
     };
 }
 
-/**
- * 判断 connect 的 state 值
- *
- * @param {Object} info state的connect信息对象
- * @return {*}
- */
-function getStateValue(info) {
-    if (typeof info.getter === 'function') {
-        return info.getter(store.getState());
-    }
-    else if (info.stateName) {
-        return store.getState(info.stateName);
+
+function clone(source) {
+    if (source == null) {
+        return source;
     }
 
-    return null;
+    if (typeof source === 'object') {
+        if (source instanceof Array) {
+            return source.map(item => clone(item));
+        }
+        else if (source instanceof Date) {
+            return new Date(source.getTime());
+        }
+
+        let result = {};
+        for (let key in source) {
+            result[key] = clone(source[key]);
+        }
+
+        return result;
+    }
+
+    return source;
 }
 
 /**
@@ -142,18 +166,18 @@ function getStateValue(info) {
  * @param {Array} diff 数据变更的diff信息
  * @return {boolean}
  */
-function stateNeedUpdate(info, diff){
-    if (typeof info.getter === 'function') {
-        return true;
-    }
-    else if (info.stateName) {
+function calcUpdateInfo(info, diff){
+    if (info.stateName) {
         let stateNameLen = info.stateName.length;
 
         for (let i = 0, diffLen = diff.length; i < diffLen; i++) {
-            let target = diff[i].target;
+            let diffInfo = diff[i];
+            let target = diffInfo.target;
             let matchThisDiff = true;
+            let j = 0;
+            let targetLen = target.length;
 
-            for (let j = 0, targetLen = target.length; j < targetLen && j < stateNameLen; j++) {
+            for (; j < targetLen && j < stateNameLen; j++) {
                 if (info.stateName[j] != target[j]) {
                     matchThisDiff = false;
                     break;
@@ -161,7 +185,32 @@ function stateNeedUpdate(info, diff){
             }
 
             if (matchThisDiff) {
-                return matchThisDiff;
+                let updateInfo = {
+                    componentData: info.dataName,
+                    storeData: info.stateName
+                };
+
+
+                if (targetLen > stateNameLen) {
+                    updateInfo.storeData = target;
+                    updateInfo.componentData += '.' + target.slice(stateNameLen).join('.');
+                }
+
+                if (targetLen >= stateNameLen && diffInfo.splice) {
+                    updateInfo.spliceArgs = [
+                        diffInfo.splice.index,
+                        diffInfo.splice.deleteCount
+                    ];
+
+                    if (diffInfo.splice.insertions instanceof Array) {
+                        updateInfo.spliceArgs.push.apply(
+                            updateInfo.spliceArgs,
+                            diffInfo.splice.insertions
+                        );
+                    }
+                }
+
+                return updateInfo;
             }
         }
     }
