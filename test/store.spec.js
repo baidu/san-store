@@ -123,33 +123,6 @@ describe('Store', () => {
         expect(store.getState().name).toBe('erik');
     });
 
-    it('can add action after store created by "addActions"', () => {
-        let store = new Store({
-            initData: {
-                name: 'errorrik',
-                emails: ['errorrik@gmail.com']
-            }
-        });
-
-        expect(store.getState().name).toBe('errorrik');
-        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
-
-        store.addActions({
-            changeName(name) {
-                return updateBuilder().set('name', name);
-            },
-
-            addEmail(email) {
-                return updateBuilder().push('emails', email);
-            }
-        });
-        store.dispatch('changeName', 'erik');
-        store.dispatch('addEmail', 'erik168@163.com');
-
-        expect(store.getState().name).toBe('erik');
-        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
-        expect(store.getState().emails[1]).toBe('erik168@163.com');
-    });
 
     it('update depend on current state', () => {
         let store = new Store({
@@ -162,16 +135,14 @@ describe('Store', () => {
         expect(store.getState().name).toBe('errorrik');
         expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
 
-        store.addActions({
-            change(info, {getState}) {
-                let builder = updateBuilder().set('name', info.name);
+        store.addAction('change', function (info, {getState}) {
+            let builder = updateBuilder().set('name', info.name);
 
-                if (!getState('emails[0]')) {
-                    builder = builder.push('emails', info.email);
-                }
-
-                return builder;
+            if (!getState('emails[0]')) {
+                builder = builder.push('emails', info.email);
             }
+
+            return builder;
         });
         store.dispatch('change', {
             name: 'erik',
@@ -195,20 +166,19 @@ describe('Store', () => {
         expect(store.getState().name).toBe('errorrik');
         expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
 
-        store.addActions({
-            changeName(name, {dispatch}) {
-                return new Promise(function (resolve) {
-                    setTimeout(() => {
-                        dispatch('setName', name);
-                        resolve(updateBuilder().set('name', 'hello'));
-                    }, 200);
-                });
-            },
-
-            setName(name) {
-                return updateBuilder().set('name', name);
-            }
+        store.addAction('changeName', function (name, {dispatch}) {
+            return new Promise(function (resolve) {
+                setTimeout(() => {
+                    dispatch('setName', name);
+                    resolve(updateBuilder().set('name', 'hello'));
+                }, 200);
+            });
         });
+
+        store.addAction('setName', function (name) {
+            return updateBuilder().set('name', name);
+        });
+
         store.dispatch('changeName', 'erik');
 
         setTimeout(() => {
@@ -224,26 +194,24 @@ describe('Store', () => {
 
         expect(store.getState().list == null).toBeTruthy();
 
-        store.addActions({
-            fetchList(payload, {dispatch, getState}) {
-                dispatch('loadingState', true);
+        store.addAction('fetchList', function (payload, {dispatch, getState}) {
+            dispatch('loadingState', true);
 
-                return requestList().then(list => {
-                    dispatch('loadingState', false);
+            return requestList().then(list => {
+                dispatch('loadingState', false);
 
-                    expect(getState('loading')).not.toBeTruthy();
-                    expect(getActionInfo().done).not.toBeTruthy();
-                    dispatch('updateList', list);
-                });
-            },
+                expect(getState('loading')).not.toBeTruthy();
+                expect(getActionInfo().done).not.toBeTruthy();
+                dispatch('updateList', list);
+            });
+        });
 
-            updateList(list) {
-                return updateBuilder().set('list', list);
-            },
+        store.addAction('updateList', function (list) {
+            return updateBuilder().set('list', list);
+        });
 
-            loadingState(state) {
-                return updateBuilder().set('loading', state);
-            }
+        store.addAction('loadingState', function (state) {
+            return updateBuilder().set('loading', state);
         });
 
         store.dispatch('fetchList');
@@ -284,47 +252,46 @@ describe('Store', () => {
 
         expect(store.getState().list == null).toBeTruthy();
 
-        store.addActions({
-            fetchList(page, {getState, dispatch}) {
-                dispatch('showLoading');
-                dispatch('updateCurrentPage', page);
+
+        store.addAction('fetchList', function (page, {getState, dispatch}) {
+            dispatch('showLoading');
+            dispatch('updateCurrentPage', page);
+            expect(getState('currentPage')).toBe(page);
+
+            return requestList(page).then(list => {
                 expect(getState('currentPage')).toBe(page);
 
-                return requestList(page).then(list => {
-                    expect(getState('currentPage')).toBe(page);
+                if (getState('currentPage') === page) {
+                    dispatch('sleep');
+                    dispatch('hideLoading');
 
-                    if (getState('currentPage') === page) {
-                        dispatch('sleep');
-                        dispatch('hideLoading');
+                    expect(getState('loading')).not.toBeTruthy();
+                    expect(getActionInfo().done).not.toBeTruthy();
+                    dispatch('updateList', list);
+                }
+            });
+        });
 
-                        expect(getState('loading')).not.toBeTruthy();
-                        expect(getActionInfo().done).not.toBeTruthy();
-                        dispatch('updateList', list);
-                    }
-                });
-            },
+        store.addAction('showLoading', function () {
+            return updateBuilder().set('loading', true);
+        });
 
-            showLoading() {
-                return updateBuilder().set('loading', true);
-            },
+        store.addAction('hideLoading', function () {
+            return updateBuilder().set('loading', false);
+        });
 
-            hideLoading() {
-                return updateBuilder().set('loading', false);
-            },
+        store.addAction('updateCurrentPage', function (page) {
+            return updateBuilder().set('currentPage', page);
+        });
 
-            updateCurrentPage(page) {
-                return updateBuilder().set('currentPage', page);
-            },
+        store.addAction('updateList', function (list) {
+            return updateBuilder().set('list', list);
+        });
 
-            updateList(list) {
-                return updateBuilder().set('list', list);
-            },
-
-            sleep() {
-                return new Promise(resolve => {
-                    setTimeout(() => {resolve()}, 400);
-                });
-            }
+        store.addAction('sleep', function () {
+            return new Promise(resolve => {
+                setTimeout(() => {resolve()}, 400);
+            });
         });
 
         store.dispatch('fetchList', 1);

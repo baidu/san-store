@@ -47,10 +47,8 @@ import {store, connect} form 'san-store';
 import {builder} from 'san-update';
 
 
-store.addActions({
-    changeUserName(name) {
-        return builder().set('user.name', name);
-    }
+store.addAction('changeUserName', function (name) {
+    return builder().set('user.name', name);
 });
 
 
@@ -77,10 +75,8 @@ var store = sanStore.store;
 var connect = sanStore.connect;
 var builder = require('san-update').builder;
 
-store.addActions({
-    changeUserName: function (name) {
-        return builder().set('user.name', name);
-    }
+store.addAction('changeUserName', function (name) {
+    return builder().set('user.name', name);
 });
 
 
@@ -192,17 +188,10 @@ console.log(appstates.user.name);
 ```
 
 
-store 并没有提供修改状态数据的方法，修改状态数据只能通过 dispatch action 来做到，具体细节请参考 [Action](#action) 章节。通过 `addAction` 或 `addActions` 方法可以添加 action。
+store 并没有提供修改状态数据的方法，修改状态数据只能通过 dispatch action 来做到，具体细节请参考 [Action](#action) 章节。通过 `addAction` 方法可以添加 action。
 
 ```javascript
 store.addAction('changeUserName', name => builder().set('user.name', name));
-
-
-store.addActions({
-    changeUserName(name) {
-        return builder().set('user.name', name);
-    }
-});
 ```
 
 
@@ -260,20 +249,6 @@ store.addAction('changeUserName', function (name) {
 
 // 通过名称 dispatch
 store.dispatch('changeUserName', 'erik');
-
-
-// 也可以使用 addActions 一次添加多个 Action
-store.addActions({
-    changeUserName(name) {
-        return updateBuilder().set('user.name', name);
-    },
-
-    initCount(count) {
-        if (getState('count') == null) {
-            return updateBuilder().set('count', count);
-        }
-    }
-});
 ```
 
 
@@ -291,7 +266,7 @@ san-update 的 builder 支持预定义所有 san-update 支持的数据操作，
 - splice: 数组splice操作
 
 
-使用前请阅读 [san-update文档：使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 文档进行详细了解。
+使用前请阅读 [san-update文档：使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 进行详细了解。
 
 
 ### 获取当前应用状态
@@ -339,35 +314,34 @@ store.dispatch('initCount', 10);
 ```javascript
 import {updateBuilder} from 'san-update';
 
-store.addActions({
-    fetchList(page, {getState, dispatch}) {
-        dispatch('showLoading');
-        dispatch('updateCurrentPage', page);
+store.addAction('fetchList', function (page, {getState, dispatch}) {
+    dispatch('showLoading');
+    dispatch('updateCurrentPage', page);
 
-        return requestList(page).then(list => {
-            if (getState('currentPage') === page) {
-                dispatch('updateList', list);
-                dispatch('hideLoading');
-            }
-        });
-    },
-
-    showLoading() {
-        return updateBuilder().set('loading', true);
-    },
-
-    hideLoading() {
-        return updateBuilder().set('loading', false);
-    },
-
-    updateCurrentPage(page) {
-        return updateBuilder().set('currentPage', page);
-    },
-
-    updateList(list) {
-        return updateBuilder().set('list', list);
-    }
+    return requestList(page).then(list => {
+        if (getState('currentPage') === page) {
+            dispatch('updateList', list);
+            dispatch('hideLoading');
+        }
+    });
 });
+
+store.addAction('showLoading', function () {
+    return updateBuilder().set('loading', true);
+});
+
+store.addAction('hideLoading', function () {
+    return updateBuilder().set('loading', false);
+});
+
+store.addAction('updateCurrentPage', function (page) {
+    return updateBuilder().set('currentPage', page);
+});
+
+store.addAction('updateList', function (list) {
+    return updateBuilder().set('list', list);
+});
+
 
 // 这里模拟一下，意思意思
 function requestList(page) {
@@ -387,25 +361,23 @@ function requestList(page) {
 3. 异步 Action 没有更新应用状态的能力，想要更新应用状态必须 dispatch 同步 Action。下面的代码说明了为什么，感兴趣可以看看。
 
 ```javascript
-store.addActions({
-    fetchList(page, {getState, dispatch}) {
-        dispatch('showLoading');
-        dispatch('updateCurrentPage', page);
+store.addAction('fetchList', function (page, {getState, dispatch}) {
+    dispatch('showLoading');
+    dispatch('updateCurrentPage', page);
 
-        return requestList(page).then(list => {
-            if (getState('currentPage') === page) {
-                dispatch('hideLoading');
-                
-                // 如果异步 Action 支持在 promise 中返回 updateBuilder 并更新状态
-                // 这里的代码就可能导致问题。因为 promise.then 不是马上运行的
-                // 这里的 currentPage 不代表 updateBuilder 运行时的 currentPage
-                // currentPage 可能被另外一个 dispatch fetchList 改掉
-                // 所以这里应该 dispatch 一个同步的 Action 让应用状态即时完成变更
-                // dispatch('updateList', list);  // good
-                return updateBuilder().set('list', list); // warning
-            }
-        });
-    }
+    return requestList(page).then(list => {
+        if (getState('currentPage') === page) {
+            dispatch('hideLoading');
+            
+            // 如果异步 Action 支持在 promise 中返回 updateBuilder 并更新状态
+            // 这里的代码就可能导致问题。因为 promise.then 不是马上运行的
+            // 这里的 currentPage 不代表 updateBuilder 运行时的 currentPage
+            // currentPage 可能被另外一个 dispatch fetchList 改掉
+            // 所以这里应该 dispatch 一个同步的 Action 让应用状态即时完成变更
+            // dispatch('updateList', list);  // good
+            return updateBuilder().set('list', list); // warning
+        }
+    });
 });
 ```
 

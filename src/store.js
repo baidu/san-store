@@ -130,19 +130,6 @@ export default class Store {
     }
 
     /**
-     * 添加多个 action
-     *
-     * @param {Object} actions action集合对象。对象的key是action的name，value是action函数
-     */
-    addActions(actions) {
-        for (let key in actions) {
-            if (actions.hasOwnProperty(key)) {
-                this.addAction(key, actions[key]);
-            }
-        }
-    }
-
-    /**
      * action 的 dispatch 入口
      *
      * @param {string} name action名称
