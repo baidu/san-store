@@ -183,8 +183,8 @@ import {store} form 'san-store';
 
 
 ```javascript
-let appstate = store.get('user.name');
-console.log(appstate);
+let appState = store.getState('user.name');
+console.log(appState);
 ```
 
 
