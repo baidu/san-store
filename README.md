@@ -179,12 +179,12 @@ Store和默认实例
 import {store} from 'san-store';
 ```
 
-通过 `get` 方法，可以获取 store 中的状态数据。
+通过 `getState` 方法，可以获取 store 中的状态数据。
 
 
 ```javascript
-let appstates = store.get();
-console.log(appstates.user.name);
+let appState = store.getState('user.name');
+console.log(appState);
 ```
 
 
