@@ -43,7 +43,7 @@ $ npm i san-store
 通过 named import 导入
 
 ```javascript
-import {store, connect} form 'san-store';
+import {store, connect} from 'san-store';
 import {builder} from 'san-update';
 
 
@@ -176,7 +176,7 @@ Store和默认实例
 一个应用具有唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
 
 ```javascript
-import {store} form 'san-store';
+import {store} from 'san-store';
 ```
 
 通过 `get` 方法，可以获取 store 中的状态数据。
@@ -198,7 +198,7 @@ store.addAction('changeUserName', name => builder().set('user.name', name));
 当然，你也可以通过 new Store 创建自己的 Store 实例。创建时可以传入初始化数据和声明 actions。
 
 ```javascript
-import {Store} form 'san-store';
+import {Store} from 'san-store';
 
 
 let myStore = new Store({
@@ -392,7 +392,7 @@ san-store 默认提供对 [San](https://ecomfe.github.io/san/) 组件的 connect
 2. 调用这个函数对组件进行connect
 
 ```javascript
-import {store, connect} form 'san-store';
+import {store, connect} from 'san-store';
 
 let connector = connect.san(
     {name: 'user.name'},
@@ -421,7 +421,7 @@ connect.san(
 `mapStates` 参数指定了要把哪些状态注入到组件，key 是要注入到组件的数据项名称，value 是 store 中状态项的名称。
 
 ```javascript
-import {store, connect} form 'san-store';
+import {store, connect} from 'san-store';
 
 
 let UserNameEditor = san.defineComponent({
@@ -446,7 +446,7 @@ connect.san(
 
 
 ```javascript
-import {store, connect} form 'san-store';
+import {store, connect} from 'san-store';
 
 
 let UserNameEditor = san.defineComponent({
