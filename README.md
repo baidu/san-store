@@ -67,7 +67,7 @@ webpack 环境配置网上有太多文章，在此不赘述了
 
 ### AMD
 
-通过 require 拿到的 exports 上包含 router 和 Link
+通过 require 拿到的 exports 上包含 store 和 connect
 
 ```javascript
 var sanStore = require('san-store');
