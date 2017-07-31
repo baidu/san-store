@@ -8,7 +8,7 @@ let config = {
         path: path.resolve(__dirname, 'dist'),
         filename: 'san-store.source.js',
         publicPath: '/dist',
-        library: 'san-store',
+        library: 'sanStore',
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
