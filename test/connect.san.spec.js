@@ -373,4 +373,73 @@ describe('Connect san component', () => {
 
         })
     });
+
+    store.addAction('for-connect-push-persons', (npersons, {getState}) => {
+        let persons = getState('persons');
+        let builder = updateBuilder().splice('persons', persons.length, npersons.length, ...npersons);
+        return builder;
+    });
+
+    it('two actions should be able to update the same state', done => {
+        store.addAction('for-connect-7', function (start, {getState}) {
+            const persons = getState('persons');
+            let ub = updateBuilder();
+
+            for (let i = 0; i < persons.length; ++i) {
+                ub = ub.set('persons[' + i + '].no', i + start);
+            }
+            return ub;
+        });
+
+        let MyComponent = san.defineComponent({
+            template: '<dl><dd san-for="person in persons" title="{{person.name}}" index="{{person.no}}">{{person.no}}. {{person.name}}</dd></dl>'
+        });
+
+        connect({
+            persons: 'persons'
+        })(MyComponent);
+
+        store.dispatch('for-connect-persons', [{
+            name: 'erik',
+            emails: ['erik168@163.com', 'errorrik@gmail.com']
+        }]);
+
+        store.dispatch('for-connect-push-persons', [{
+            name: 'yanni4night',
+            emails: ['yinyongcom666@163.com', 'yanni4night@gmail.com']
+        }]);
+
+        store.dispatch('for-connect-7', 3);
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let dds = wrap.getElementsByTagName('dd');
+        expect(dds.length).toBe(2);
+        expect(dds[0].getAttribute('index')).toBe('3');
+        expect(dds[1].getAttribute('index')).toBe('4');
+
+        store.dispatch('for-connect-push-persons', [{
+            name: 'Kate',
+            emails: []
+        }, {
+            name: 'Jim',
+            emails: []
+        }]);
+
+        store.dispatch('for-connect-7', 3);
+        san.nextTick(() => {
+            let dds = wrap.getElementsByTagName('dd');
+            expect(dds.length).toBe(4);
+            expect(dds[2].getAttribute('index')).toBe('5');
+            expect(dds[3].getAttribute('index')).toBe('6');
+
+             myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    });
 });

@@ -81,14 +81,16 @@ export default function connect(mapStates, mapActions) {
                         return;
                     }
 
-                    let updateInfo = calcUpdateInfo(info, diff);
-                    if (updateInfo) {
-                        if (updateInfo.spliceArgs) {
-                            this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
-                        }
-                        else {
-                            this.data.set(updateInfo.componentData, clone(store.getState(updateInfo.storeData)));
-                        }
+                    let updateInfos = calcUpdateInfo(info, diff);
+                    if (updateInfos) {
+                        updateInfos.forEach(updateInfo => {
+                            if (updateInfo.spliceArgs) {
+                                this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
+                            }
+                            else {
+                                this.data.set(updateInfo.componentData, clone(store.getState(updateInfo.storeData)));
+                            }
+                        });
                     }
                 });
             };
@@ -169,6 +171,7 @@ function clone(source) {
 function calcUpdateInfo(info, diff){
     if (info.stateName) {
         let stateNameLen = info.stateName.length;
+        let updateInfos = [];
 
         for (let i = 0, diffLen = diff.length; i < diffLen; i++) {
             let diffInfo = diff[i];
@@ -210,8 +213,10 @@ function calcUpdateInfo(info, diff){
                     }
                 }
 
-                return updateInfo;
+                updateInfos.push(updateInfo);
             }
         }
+
+        return updateInfos;
     }
 }
