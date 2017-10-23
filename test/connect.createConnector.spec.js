@@ -1,8 +1,9 @@
-import {store, connect} from '../src/main';
+import {Store, connect} from '../src/main';
 import san from 'san';
 import {updateBuilder} from 'san-update';
 
-describe('Connect san component', () => {
+describe('Connect createConnector component', () => {
+    const store = new Store();
     store.addAction('reset-for-connect', () => {
         let resetBuilder = updateBuilder()
             .set('name', 'errorrik')
@@ -15,13 +16,15 @@ describe('Connect san component', () => {
         store.dispatch('reset-for-connect');
         setTimeout(done, 1);
     });
+    // 手动连接自己声明的store
+    const manualConnect = connect.createConnector(store);
 
     it('data should be ready when component init', () => {
         let MyComponent = san.defineComponent({
             template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
         });
 
-        connect.san({
+        manualConnect({
             name: 'name',
             email: 'emails[0]'
         })(MyComponent);
@@ -51,7 +54,7 @@ describe('Connect san component', () => {
             template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
         });
 
-        connect.san({
+        manualConnect({
             name: 'name',
             email: 'emails[0]'
         })(MyComponent);
@@ -92,7 +95,7 @@ describe('Connect san component', () => {
             template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
         });
 
-        connect.san({
+        manualConnect({
             name: 'name',
             email: state => {
                 return state.emails[0];
@@ -135,7 +138,7 @@ describe('Connect san component', () => {
             template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
         });
 
-        connect.san(
+        manualConnect(
             {
                 name: 'name',
                 email: 'emails[0]'
@@ -181,7 +184,7 @@ describe('Connect san component', () => {
             template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
         });
 
-        connect.san(
+        manualConnect(
             {
                 name: 'name',
                 email: 'emails[0]'
@@ -229,7 +232,7 @@ describe('Connect san component', () => {
             template: '<dl><dt title="{{name}}">{{name}}</dt><dd san-for="email in emails" title="{{email}}">{{email}}</dd></dl>'
         });
 
-        connect.san({
+        manualConnect({
             name: 'persons[0].name',
             emails: 'persons[0].emails'
         })(MyComponent);
@@ -307,7 +310,7 @@ describe('Connect san component', () => {
             template: '<dl><dt title="{{person.name}}">{{person.name}}</dt><dd san-for="email in person.emails" title="{{email}}">{{email}}</dd></dl>'
         });
 
-        connect.san({
+        manualConnect({
             person: 'persons[0]'
         })(MyComponent);
 
