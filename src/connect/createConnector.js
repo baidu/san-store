@@ -131,7 +131,7 @@ function connect(mapStates, mapActions, store) {
 
         return ComponentClass;
     };
-};
+}
 
 function clone(source) {
     if (source == null) {
