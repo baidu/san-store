@@ -9,6 +9,7 @@
 
 import flattenDiff from './flatten-diff';
 import parseName from './parse-name';
+import emitDevtool from './devtool'
 
 /**
  * 唯一id的起始值
@@ -127,6 +128,8 @@ export default class Store {
         }
 
         this.actions[name] = action;
+
+        emitDevtool('store-action-added', {store: this, name, action});
     }
 
     /**
@@ -194,6 +197,14 @@ export default class Store {
         if (updateInfo) {
             this._fire(updateInfo[1]);
         }
+        emitDevtool('store-dispatched', {
+            store: this,
+            diff: updateInfo && updateInfo[1],
+            name,
+            payload,
+            actionId,
+            parentId
+        });
     }
 }
 
