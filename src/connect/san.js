@@ -131,7 +131,7 @@ export default function connect(mapStates, mapActions) {
             }
         }
 
-        emitDevtool('store-comp-connected', {ComponentClass, store});
+        emitDevtool('store-connected', {ComponentClass, store});
 
         return ComponentClass;
     };

@@ -6,8 +6,9 @@
  * @author luyuan
  */
 
- import EmitSanDevtool from './san-devtool';
+ import emitSanDevtool from './san-devtool';
 
  export default function EmitDevtool() {
-    EmitSanDevtool.apply(null, arguments);
+    emitSanDevtool.apply(null, arguments);
  }
+ 
