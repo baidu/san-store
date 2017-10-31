@@ -9,7 +9,7 @@
 
 import flattenDiff from './flatten-diff';
 import parseName from './parse-name';
-import emitDevtool from './devtool'
+import emitDevtool from './devtool/devtool';
 
 /**
  * 唯一id的起始值

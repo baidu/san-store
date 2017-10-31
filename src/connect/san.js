@@ -9,7 +9,7 @@
 
 import parseName from '../parse-name';
 import {store} from '../main';
-import emitDevtool from '../devtool';
+import emitDevtool from '../devtool/devtool';
 
 
 /**
