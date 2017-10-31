@@ -84,6 +84,9 @@ export default class Store {
         if (typeof listener === 'function') {
             this.listeners.push(listener);
         }
+        emitDevtool('store-listened', {
+            store: this,
+        });
     }
 
     /**
@@ -98,6 +101,9 @@ export default class Store {
                 this.listeners.splice(len, 1);
             }
         }
+        emitDevtool('store-unlistened', {
+            store: this,
+        });
     }
 
     /**

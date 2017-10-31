@@ -9,7 +9,6 @@
 
 import parseName from '../parse-name';
 import {store} from '../main';
-import emitDevtool from '../devtool/devtool';
 
 
 /**
@@ -130,8 +129,6 @@ export default function connect(mapStates, mapActions) {
                 }
             }
         }
-
-        emitDevtool('store-connected', {ComponentClass, store});
 
         return ComponentClass;
     };

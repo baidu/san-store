@@ -8,6 +8,7 @@
 
 import Store from './store';
 import sanConnect from './connect/san'
+import emitDevtool from './devtool/devtool';
 
 /**
  * 默认的全局 Store 实例
@@ -16,6 +17,8 @@ import sanConnect from './connect/san'
  * @type {Store}
  */
 export let store = new Store();
+
+emitDevtool('store-default-created', {store});
 
 /**
  * 版本号
