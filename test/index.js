@@ -2,6 +2,7 @@
 import './parse-name.spec';
 import './store.spec';
 import './connect.san.spec';
+import './connect.createConnector.spec';
 
 
 import {store, Store, connect} from '../src/main';

@@ -7,7 +7,7 @@
  */
 
 import Store from './store';
-import sanConnect from './connect/san'
+import createConnector from './connect/createConnector';
 
 /**
  * 默认的全局 Store 实例
@@ -26,4 +26,7 @@ export let version = '1.0.1';
 
 export {Store};
 
-export let connect = {san: sanConnect};
+export let connect = {
+    san: createConnector(store),
+    createConnector
+};

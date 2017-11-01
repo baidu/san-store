@@ -6,19 +6,18 @@
  * @author errorrik
  */
 
-
 import parseName from '../parse-name';
-import {store} from '../main';
-
+import Store from '../store';
 
 /**
  * san组件的connect
  *
  * @param {Object} mapStates 状态到组件数据的映射信息
  * @param {Object|Array?} mapActions store的action操作到组件actions方法的映射信息
+ * @param {Store} store 指定的store实例
  * @return {function(ComponentClass)}
  */
-export default function connect(mapStates, mapActions) {
+function connect(mapStates, mapActions, store) {
     let mapStateInfo = [];
 
     for (let key in mapStates) {
@@ -134,7 +133,6 @@ export default function connect(mapStates, mapActions) {
     };
 }
 
-
 function clone(source) {
     if (source == null) {
         return source;
@@ -166,7 +164,7 @@ function clone(source) {
  * @param {Array} diff 数据变更的diff信息
  * @return {boolean}
  */
-function calcUpdateInfo(info, diff){
+function calcUpdateInfo(info, diff) {
     if (info.stateName) {
         let stateNameLen = info.stateName.length;
 
@@ -189,7 +187,6 @@ function calcUpdateInfo(info, diff){
                     componentData: info.dataName,
                     storeData: info.stateName
                 };
-
 
                 if (targetLen > stateNameLen) {
                     updateInfo.storeData = target;
@@ -214,4 +211,18 @@ function calcUpdateInfo(info, diff){
             }
         }
     }
+}
+
+/**
+ * createConnector 创建连接
+ *
+ * @param {Store} store store实例
+ * @return {Function}
+ */
+export default function createConnector(store) {
+    if (store instanceof Store) {
+        return (mapStates, mapActions) => connect(mapStates, mapActions, store);
+    }
+
+    throw new Error(store + ' must be an instance of Store!');
 }
