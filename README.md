@@ -20,7 +20,9 @@
     - [变更应用状态](#变更应用状态)  
     - [获取当前应用状态](#获取当前应用状态)  
     - [异步过程](#异步过程)  
-- [组件的connect](#组件的connect)  
+- [组件的connect](#组件的connect) 
+    - [connect.san](#connect.san)
+    - [connect.createConnector](#connect.createConnector)   
     - [mapstates](#mapstates)  
     - [mapActions](#mapactions)  
 
@@ -173,7 +175,11 @@ san-store 只是提供了全局唯一状态管理和状态更新方式，你可�
 Store和默认实例
 ----
 
-一个应用具有唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
+一个应用具有唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。
+
+复杂业务场景下，当同一系统中有不同团队开发自己的业务模块，各团队之间没有状态共享，可以考虑分别建立store实例进行开发，相关细节请参考[connect.createConnector](#connect.createConnector)章节。
+
+但绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
 
 ```javascript
 import {store} from 'san-store';
@@ -386,7 +392,9 @@ store.addAction('fetchList', function (page, {getState, dispatch}) {
 组件的connect
 ----
 
-san-store 默认提供对 [San](https://ecomfe.github.io/san/) 组件的 connect 支持，步骤和 redux 类似：
+### connect.san
+
+san-store 内置了`connect.san`方法对**默认store实例**和 [San](https://ecomfe.github.io/san/) 组件进行连接，步骤和 redux 类似：
 
 1. 通过 `connect.san` 方法创建一个 connect 组件的函数
 2. 调用这个函数对组件进行connect
@@ -410,10 +418,40 @@ connect.san(
 
 `connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
 
-> 提示：san-store 只提供了对默认 store 实例的 connect 功能
+### connect.createConnector
+当实际业务中真的需要多个store实例时，可以通过这个函数自行创建方法连接store实例和San组件。步骤如下：
 
+1. 创建store实例
+2. 通过 `connect.createConnector` 方法创建一个 connect函数
+3. 调用这个函数对刚刚声明的store实例和组件进行connect
 
+```js
+import {Store, connect} from 'san-store';
 
+// 创建模块A中的store实例
+const storeA = new Store({
+    initData: {
+        name:'erik'
+    },
+    actions:{
+        changeUserName() {
+            return builder().set('user.name', name);
+        }
+    }
+});
+
+// 调用connect.createConnector方法，传入store实例
+const connectA = connect.createConnector(storeA);
+
+const UserNameEditor = san.defineComponent({...});
+
+// 调用手动创建的connectA方法进行storeA和组件连接
+connectA(
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+)(UserNameEditor);
+```
+`connect.createConnector` 方法的签名为 `{function(Class)}connect.createConnector({Store}store)`
 ### mapStates
 
 `Object`
