@@ -8,6 +8,7 @@
 
 import Store from './store';
 import createConnector from './connect/createConnector';
+import emitDevtool from './devtool/emitter';
 
 /**
  * 默认的全局 Store 实例
@@ -15,7 +16,11 @@ import createConnector from './connect/createConnector';
  *
  * @type {Store}
  */
-export let store = new Store();
+export let store = new Store({name: '__default__'});
+
+// Alternatives for not receiving the events including default store info from
+// connector.
+emitDevtool('store-default-inited', {store});
 
 /**
  * 版本号
