@@ -9,6 +9,7 @@
 
 import flattenDiff from './flatten-diff';
 import parseName from './parse-name';
+import emitDevtool from './devtool/emitter';
 
 /**
  * 唯一id的起始值
@@ -45,12 +46,14 @@ export default class Store {
         {
             initData = {},
             actions = {},
-            log = true
+            log = true,
+            name
         } = {}
     ) {
         this.raw = initData;
         this.actions = actions;
         this.log = log;
+        this.name = name;
 
         this.listeners = [];
         this.stateChangeLogs = [];
@@ -83,6 +86,12 @@ export default class Store {
         if (typeof listener === 'function') {
             this.listeners.push(listener);
         }
+        // Alternatives for not receiving the events including default store
+        // info from connector.
+        emitDevtool('store-listened', {
+            store: this,
+            listener
+        });
     }
 
     /**
@@ -97,6 +106,12 @@ export default class Store {
                 this.listeners.splice(len, 1);
             }
         }
+        // Alternatives for not receiving the events including default store
+        // info from connector.
+        emitDevtool('store-unlistened', {
+            store: this,
+            listener
+        });
     }
 
     /**
@@ -127,6 +142,8 @@ export default class Store {
         }
 
         this.actions[name] = action;
+
+        emitDevtool('store-action-added', {store: this, action});
     }
 
     /**
@@ -194,6 +211,14 @@ export default class Store {
         if (updateInfo) {
             this._fire(updateInfo[1]);
         }
+        emitDevtool('store-dispatched', {
+            store: this,
+            diff: updateInfo ? updateInfo[1] : null,
+            name,
+            payload,
+            actionId,
+            parentId
+        });
     }
 }
 

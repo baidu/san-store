@@ -8,6 +8,7 @@
 
 import parseName from '../parse-name';
 import Store from '../store';
+import emitDevtool from '../devtool/emitter';
 
 /**
  * san组件的connect
@@ -42,6 +43,12 @@ function connect(mapStates, mapActions, store) {
             mapInfo && mapStateInfo.push(mapInfo);
         }
     }
+
+    emitDevtool('store-connected', {
+        mapStates,
+        mapActions,
+        store
+    });
 
     return function (ComponentClass) {
         let componentProto;
@@ -93,6 +100,13 @@ function connect(mapStates, mapActions, store) {
             };
             store.listen(this._storeListener);
 
+            emitDevtool('store-comp-inited', {
+                mapStates,
+                mapActions,
+                store,
+                component: this,
+            });
+
             if (typeof inited === 'function') {
                 inited.call(this);
             }
@@ -102,6 +116,13 @@ function connect(mapStates, mapActions, store) {
         componentProto.disposed = function () {
             store.unlisten(this._storeListener);
             this._storeListener = null;
+
+            emitDevtool('store-comp-disposed', {
+                mapStates,
+                mapActions,
+                store,
+                component: this,
+            });
 
             if (typeof disposed === 'function') {
                 disposed.call(this);
