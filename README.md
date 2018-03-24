@@ -1,14 +1,14 @@
 # san-store
 
 [![NPM version](http://img.shields.io/npm/v/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
-[![Build Status](https://img.shields.io/circleci/project/ecomfe/san-store/master.svg?style=flat-square)](https://circleci.com/gh/ecomfe/san-store/tree/master)
-[![License](https://img.shields.io/github/license/ecomfe/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
+[![Build Status](https://img.shields.io/circleci/project/baidu/san-store/master.svg?style=flat-square)](https://circleci.com/gh/baidu/san-store/tree/master)
+[![License](https://img.shields.io/github/license/baidu/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
 
-[San](https://ecomfe.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
+[San](https://baidu.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
 
-![flow](https://raw.githubusercontent.com/ecomfe/san-store/master/doc/flow.png)
+![flow](https://raw.githubusercontent.com/baidu/san-store/master/doc/flow.png)
 
-> 提示：使用 san-store 需要同时使用 [san-update](https://github.com/ecomfe/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
+> 提示：使用 san-store 需要同时使用 [san-update](https://github.com/baidu/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
 
 
 - [下载](#下载)  
@@ -108,7 +108,7 @@ require.config({
 示例项目
 ----
 
-从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos](https://github.com/ecomfe/san-store/tree/master/example/todos) 是如何在项目里使用 san-store 进行状态管理的示例项目。
+从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos](https://github.com/baidu/san-store/tree/master/example/todos) 是如何在项目里使用 san-store 进行状态管理的示例项目。
 
 
 为什么要进行应用状态管理
@@ -123,7 +123,7 @@ require.config({
 那么，使用 san-store 进行应用状态管理，和自己在组件里完成所有事情，有什么区别呢？
 
 
-![why use](https://raw.githubusercontent.com/ecomfe/san-store/master/doc/why-use.png)
+![why use](https://raw.githubusercontent.com/baidu/san-store/master/doc/why-use.png)
 
 ### 自己管理你的应用状态
 
@@ -260,7 +260,7 @@ store.dispatch('changeUserName', 'erik');
 
 san-update 是一个 Immutable 的更新对象库，其提供了一些更新函数（如set、push等），通过 `newObj = set(oldObj, 'x', 1)` 的使用形式让对象更新 Immutable。builder 是 san-update 提供的一个很好用的功能，通过 builder 你可以预定义一系列的数据更新操作，然后通过 `builder.build` 方法可以获得一个更新函数。san-store 就是利用这个功能，使用 action 返回的 builder 生成对象更新函数，再调用它进行 store 内部状态更新。
 
-san-update 的 builder 支持预定义所有 san-update 支持的数据操作，通过 [san-update文档：可用指令](https://github.com/ecomfe/san-update#可用指令) 可以查看所有操作类型。常用的有：
+san-update 的 builder 支持预定义所有 san-update 支持的数据操作，通过 [san-update文档：可用指令](https://github.com/baidu/san-update#可用指令) 可以查看所有操作类型。常用的有：
 
 - apply: 对现有数据项应用更新
 - set: 设置数据项
@@ -272,7 +272,7 @@ san-update 的 builder 支持预定义所有 san-update 支持的数据操作，
 - splice: 数组splice操作
 
 
-使用前请阅读 [san-update文档：使用builder构建更新函数](https://github.com/ecomfe/san-update#使用builder构建更新函数) 进行详细了解。
+使用前请阅读 [san-update文档：使用builder构建更新函数](https://github.com/baidu/san-update#使用builder构建更新函数) 进行详细了解。
 
 
 ### 获取当前应用状态
@@ -394,7 +394,7 @@ store.addAction('fetchList', function (page, {getState, dispatch}) {
 
 ### connect.san
 
-san-store 内置了`connect.san`方法对**默认store实例**和 [San](https://ecomfe.github.io/san/) 组件进行连接，步骤和 redux 类似：
+san-store 内置了`connect.san`方法对**默认store实例**和 [San](https://baidu.github.io/san/) 组件进行连接，步骤和 redux 类似：
 
 1. 通过 `connect.san` 方法创建一个 connect 组件的函数
 2. 调用这个函数对组件进行connect
