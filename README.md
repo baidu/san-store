@@ -1,8 +1,8 @@
 # san-store
 
 [![NPM version](http://img.shields.io/npm/v/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
-[![Build Status](https://img.shields.io/circleci/project/baidu/san-store/master.svg?style=flat-square)](https://circleci.com/gh/baidu/san-store/tree/master)
 [![License](https://img.shields.io/github/license/baidu/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
+[![CircleCI](https://circleci.com/gh/baidu/san-store.svg?style=svg)](https://circleci.com/gh/baidu/san-store)
 
 [San](https://baidu.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
 
@@ -419,6 +419,7 @@ connect.san(
 `connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
 
 ### connect.createConnector
+
 当实际业务中真的需要多个store实例时，可以通过这个函数自行创建方法连接store实例和San组件。步骤如下：
 
 1. 创建store实例
