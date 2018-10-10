@@ -313,7 +313,7 @@ store.dispatch('initCount', 10);
 同步的 Action 返回一个 updateBuilder，并立即更新数据状态，但我们经常会遇到异步的场景，常见的比如请求数据、返回并更新应用状态。Action 在设计上作为 **业务组件的唯一出口**， 对异步支持的方式如下：
 
 1. 返回一个 Promise 时，当前 Action 为异步
-2. 返回一个 updateBuilder 或什么都不返回时，当前 Action 为异步
+2. 返回一个 updateBuilder 或什么都不返回时，当前 Action 为同步
 
 下面是一个简单的例子： 一个列表请求的行为，此时要显示 loading，在请求返回时更新应用状态中的列表项，同时隐藏 loading。
 
