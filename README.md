@@ -33,7 +33,7 @@
 NPM:
 
 ```
-$ npm i san-store
+$ npm i san-store san-update
 ```
 
 
@@ -205,6 +205,7 @@ store.addAction('changeUserName', name => builder().set('user.name', name));
 
 ```javascript
 import {Store} from 'san-store';
+import {builder} from 'san-update';
 
 
 let myStore = new Store({
@@ -238,7 +239,7 @@ Action 是 san-store 最重要的组成部分之一，它：
 如果你使用了 san-store，**Action 应该是你业务组件的唯一出口**：用户操作事件等需要改变应用状态时，都应该 dispatch Action。它的签名如下：
 
 ```
-{updateBuilder?} function ({*}payload, {{Function}getState, {Function}dispatch})
+{builder?} function ({*}payload, {{Function}getState, {Function}dispatch})
 ```
 
 ### 变更应用状态
@@ -247,10 +248,10 @@ Action 是 san-store 最重要的组成部分之一，它：
 Action 接收一个 payload，返回一个 san-update 的 builder 对象。store 使用 builder 对象生成状态变更函数，并执行它，使 store 内部的状态得到更新。当然，如果当前 action 不期望对 store 的状态进行更新，可以不返回 builder 对象。
 
 ```javascript
-import {updateBuilder} from 'san-update';
+import {builder} from 'san-update';
 
 store.addAction('changeUserName', function (name) {
-    return updateBuilder().set('user.name', name);
+    return builder().set('user.name', name);
 });
 
 // 通过名称 dispatch
@@ -281,11 +282,11 @@ Action 的第二个参数是一个对象，其中的 getState 方法可以用于
 
 
 ```javascript
-import {updateBuilder} from 'san-update';
+import {builder} from 'san-update';
 
 store.addAction('initCount', function (count, {getState}) {
     if (getState('count') == null) {
-        return updateBuilder().set('count', count);
+        return builder().set('count', count);
     }
 });
 
@@ -296,11 +297,11 @@ store.dispatch('initCount', 10);
 
 
 ```javascript
-import {updateBuilder} from 'san-update';
+import {builder} from 'san-update';
 
 store.addAction('initCount', function (count) {
     // apply 意思是：在原有的值上应用新的值
-    return updateBuilder().apply('count', oldValue => {
+    return builder().apply('count', oldValue => {
         return oldValue == null ? count : oldValue;
     });
 });
@@ -310,15 +311,15 @@ store.dispatch('initCount', 10);
 
 ### 异步过程
 
-同步的 Action 返回一个 updateBuilder，并立即更新数据状态，但我们经常会遇到异步的场景，常见的比如请求数据、返回并更新应用状态。Action 在设计上作为 **业务组件的唯一出口**， 对异步支持的方式如下：
+同步的 Action 返回一个 builder，并立即更新数据状态，但我们经常会遇到异步的场景，常见的比如请求数据、返回并更新应用状态。Action 在设计上作为 **业务组件的唯一出口**， 对异步支持的方式如下：
 
 1. 返回一个 Promise 时，当前 Action 为异步
-2. 返回一个 updateBuilder 或什么都不返回时，当前 Action 为同步
+2. 返回一个 builder 或什么都不返回时，当前 Action 为同步
 
 下面是一个简单的例子： 一个列表请求的行为，此时要显示 loading，在请求返回时更新应用状态中的列表项，同时隐藏 loading。
 
 ```javascript
-import {updateBuilder} from 'san-update';
+import {builder} from 'san-update';
 
 store.addAction('fetchList', function (page, {getState, dispatch}) {
     dispatch('showLoading');
@@ -333,19 +334,19 @@ store.addAction('fetchList', function (page, {getState, dispatch}) {
 });
 
 store.addAction('showLoading', function () {
-    return updateBuilder().set('loading', true);
+    return builder().set('loading', true);
 });
 
 store.addAction('hideLoading', function () {
-    return updateBuilder().set('loading', false);
+    return builder().set('loading', false);
 });
 
 store.addAction('updateCurrentPage', function (page) {
-    return updateBuilder().set('currentPage', page);
+    return builder().set('currentPage', page);
 });
 
 store.addAction('updateList', function (list) {
-    return updateBuilder().set('list', list);
+    return builder().set('list', list);
 });
 
 
@@ -375,13 +376,13 @@ store.addAction('fetchList', function (page, {getState, dispatch}) {
         if (getState('currentPage') === page) {
             dispatch('hideLoading');
             
-            // 如果异步 Action 支持在 promise 中返回 updateBuilder 并更新状态
+            // 如果异步 Action 支持在 promise 中返回 builder 并更新状态
             // 这里的代码就可能导致问题。因为 promise.then 不是马上运行的
-            // 这里的 currentPage 不代表 updateBuilder 运行时的 currentPage
+            // 这里的 currentPage 不代表 builder 运行时的 currentPage
             // currentPage 可能被另外一个 dispatch fetchList 改掉
             // 所以这里应该 dispatch 一个同步的 Action 让应用状态即时完成变更
             // dispatch('updateList', list);  // good
-            return updateBuilder().set('list', list); // warning
+            return builder().set('list', list); // warning
         }
     });
 });
