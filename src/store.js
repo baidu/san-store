@@ -153,7 +153,7 @@ export default class Store {
      * @param {*} payload payload
      */
     dispatch(name, payload) {
-        this._dispatch(name, payload);
+        return this._dispatch(name, payload);
     }
 
     /**
@@ -183,10 +183,9 @@ export default class Store {
         let updateInfo;
         if (actionReturn) {
             if (typeof actionReturn.then === 'function') {
-                actionReturn.then(() => {
+                return actionReturn.then(() => {
                     this.actionCtrl.done(actionId);
                 });
-                return;
             }
 
             if (typeof actionReturn.buildWithDiff === 'function') {
