@@ -136,7 +136,7 @@ function connect(mapStates, mapActions, store) {
             if (mapActions instanceof Array) {
                 mapActions.forEach(actionName => {
                     componentProto.actions[actionName] = function (payload) {
-                        store.dispatch(actionName, payload);
+                        return store.dispatch(actionName, payload);
                     };
                 });
             }
@@ -144,7 +144,7 @@ function connect(mapStates, mapActions, store) {
                 for (let key in mapActions) {
                     let actionName = mapActions[key];
                     componentProto.actions[key] = function (payload) {
-                        store.dispatch(actionName, payload);
+                        return store.dispatch(actionName, payload);
                     };
                 }
             }
