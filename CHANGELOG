@@ -1,7 +1,13 @@
+1.1.2
+---------
+
+- [修复] connect 的异步 action，无返回 Promise
+
+
 1.1.1
 ---------
 
-- dispatch 为异步过程时，返回 Promise
+- [新特性] dispatch 为异步过程时，返回 Promise
 
 
 1.0.1
