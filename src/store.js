@@ -183,8 +183,9 @@ export default class Store {
         let updateInfo;
         if (actionReturn) {
             if (typeof actionReturn.then === 'function') {
-                return actionReturn.then(() => {
+                return actionReturn.then(returns => {
                     this.actionCtrl.done(actionId);
+                    return returns;
                 });
             }
 
