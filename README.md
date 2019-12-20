@@ -381,13 +381,25 @@ store.addAction('fetchList', function (page, {getState, dispatch}) {
             // 这里的 currentPage 不代表 builder 运行时的 currentPage
             // currentPage 可能被另外一个 dispatch fetchList 改掉
             // 所以这里应该 dispatch 一个同步的 Action 让应用状态即时完成变更
-            // dispatch('updateList', list);  // good
-            return builder().set('list', list); // warning
+            dispatch('updateList', list);  // good
+            // return builder().set('list', list); // warning
         }
     });
 });
 ```
 
+异步 Action 在 dispatch 时将返回 Promise 对象，以便于 Action 完成后的逻辑控制。
+
+```javascript
+store.addAction('addArticle', function (article) {
+    return axios.post(url, article);
+});
+
+
+store.dispatch('addArticle', {}).then(() => {
+    // redirect to view page
+});
+```
 
 
 组件的connect

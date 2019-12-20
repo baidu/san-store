@@ -247,6 +247,64 @@ describe('Store', () => {
         }
     });
 
+    it('dispatch async action in action, return Promise', done => {
+        let store = new Store({});
+
+        expect(store.getState().list == null).toBeTruthy();
+
+        store.addAction('fetchList', function (payload, {dispatch, getState}) {
+            dispatch('loadingState', true);
+
+            return requestList().then(list => {
+                dispatch('loadingState', false);
+
+                expect(getState('loading')).not.toBeTruthy();
+                expect(getActionInfo().done).not.toBeTruthy();
+                dispatch('updateList', list);
+            });
+        });
+
+        store.addAction('updateList', function (list) {
+            return updateBuilder().set('list', list);
+        });
+
+        store.addAction('loadingState', function (state) {
+            return updateBuilder().set('loading', state);
+        });
+
+        let doFetchList = store.dispatch('fetchList');
+        expect(store.getState('loading')).toBeTruthy();
+        expect(getActionInfo().done).not.toBeTruthy();
+
+        doFetchList.then(() => {
+            expect(store.getState('loading')).not.toBeTruthy();
+            expect(store.getState('list').length).toBe(2);
+            expect(store.getState('list[0]')).toBe(1);
+            expect(getActionInfo().done).toBeTruthy();
+
+            done();
+        });
+
+        function requestList() {
+            return new Promise(function (resolve) {
+                setTimeout(() => {
+                    resolve([1, 2]);
+                }, 100);
+            });
+        }
+
+        function getActionInfo() {
+            let actionInfo;
+
+            store.actionCtrl.list.forEach(item => {
+                if (item.name === 'fetchList') {
+                    actionInfo = item;
+                }
+            });
+            return actionInfo;
+        }
+    });
+
     it('children action not done, action shouldnot be mark done', done => {
         let store = new Store({});
 
@@ -309,6 +367,103 @@ describe('Store', () => {
             expect(getActionInfo().done).toBeTruthy();
             done();
         }, 1000);
+
+        function requestList(page) {
+            return new Promise(function (resolve) {
+                setTimeout(() => {
+                    resolve([page]);
+                }, 100);
+            });
+        }
+
+        function getActionInfo() {
+            let actionInfo;
+
+            store.actionCtrl.list.forEach(item => {
+                if (item.name === 'fetchList') {
+                    actionInfo = item;
+                }
+            });
+            return actionInfo;
+        }
+    });
+
+    it('children action not done, promise should not resolved', done => {
+        let store = new Store({});
+
+        expect(store.getState().list == null).toBeTruthy();
+
+
+        store.addAction('fetchList', function (page, {getState, dispatch}) {
+            dispatch('showLoading');
+            dispatch('updateCurrentPage', page);
+            expect(getState('currentPage')).toBe(page);
+
+            return requestList(page)
+                .then(list => {
+                    expect(getState('currentPage')).toBe(page);
+
+                    if (getState('currentPage') === page) {
+                        return dispatch('sleep', list);
+                    }
+                })
+                .then(list => {
+                    dispatch('hideLoading');
+
+                    expect(getState('loading')).not.toBeTruthy();
+                    expect(getActionInfo().done).not.toBeTruthy();
+                    dispatch('updateList', list);
+
+                    return list;
+                });
+        });
+
+        store.addAction('showLoading', function () {
+            return updateBuilder().set('loading', true);
+        });
+
+        store.addAction('hideLoading', function () {
+            return updateBuilder().set('loading', false);
+        });
+
+        store.addAction('updateCurrentPage', function (page) {
+            return updateBuilder().set('currentPage', page);
+        });
+
+        store.addAction('updateList', function (list) {
+            return updateBuilder().set('list', list);
+        });
+
+        store.addAction('sleep', function (list) {
+            return new Promise(resolve => {
+                setTimeout(() => {resolve(list)}, 400);
+            });
+        });
+
+        let isDone = false;
+        store.dispatch('fetchList', 1).then(list => {
+            expect(store.getState('loading')).not.toBeTruthy();
+            expect(store.getState('list').length).toBe(1);
+            expect(store.getState('list[0]')).toBe(1);
+            expect(getActionInfo().done).toBeTruthy();
+
+
+            expect(list.length).toBe(1);
+            expect(list[0]).toBe(1);
+
+            isDone = true;
+            done();
+        });
+
+        setTimeout(() => {
+            expect(store.getState('loading')).toBeTruthy();
+            expect(getActionInfo().done).not.toBeTruthy();
+            expect(isDone).toBeFalsy();
+        }, 200)
+
+        expect(store.getState('loading')).toBeTruthy();
+        expect(getActionInfo().done).not.toBeTruthy();
+
 
         function requestList(page) {
             return new Promise(function (resolve) {

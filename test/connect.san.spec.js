@@ -365,4 +365,43 @@ describe('Connect san component', () => {
 
         });
     });
+
+    it('async action should return Promise', done => {
+        store.addAction('for-connect-7', (name, {dispatch}) => {
+            return new Promise(function (resolve) {
+                setTimeout(() => {
+                    dispatch('for-connect-8', name);
+                    resolve();
+                }, 100);
+            });
+        });
+
+        store.addAction('for-connect-8', name => {
+            return updateBuilder().set('forConnect7', name);
+        });
+
+        let MyComponent = san.defineComponent({
+            template: '<a>{{name}}</a>'
+        });
+
+        connect.san(
+            {name: 'forConnect7'},
+            {change: 'for-connect-7'}
+        )(MyComponent);
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+        expect(myComponent.data.get('name')).toBeUndefined();
+
+        myComponent.actions.change('asyncchange').then(() => {
+            expect(myComponent.data.get('name')).toBe('asyncchange');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    });
 });
