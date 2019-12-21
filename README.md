@@ -33,7 +33,7 @@
 NPM:
 
 ```
-$ npm i san-store san-update
+$ npm i --save san-store san-update
 ```
 
 
