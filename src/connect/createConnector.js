@@ -80,7 +80,7 @@ function connect(mapStates, mapActions, store) {
             });
 
             // listen store change
-            this._storeListener = diff => {
+            this.__storeListener = diff => {
                 mapStateInfo.forEach(info => {
                     if (typeof info.getter === 'function') {
                         this.data.set(info.dataName, info.getter(store.getState()));
@@ -98,7 +98,7 @@ function connect(mapStates, mapActions, store) {
                     }
                 });
             };
-            store.listen(this._storeListener);
+            store.listen(this.__storeListener);
 
             emitDevtool('store-comp-inited', {
                 mapStates,
@@ -114,8 +114,8 @@ function connect(mapStates, mapActions, store) {
 
         let disposed = componentProto.disposed;
         componentProto.disposed = function () {
-            store.unlisten(this._storeListener);
-            this._storeListener = null;
+            store.unlisten(this.__storeListener);
+            this.__storeListener = null;
 
             emitDevtool('store-comp-disposed', {
                 mapStates,
