@@ -17,14 +17,14 @@ describe('Connect san component', () => {
     });
 
     it('data should be ready when component init', () => {
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        connect.san({
+        let MyComponent = connect.san({
             name: 'name',
             email: 'emails[0]'
-        })(MyComponent);
+        })(
+            san.defineComponent({
+                template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+            })
+        );
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -47,14 +47,14 @@ describe('Connect san component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        connect.san({
+        let MyComponent = connect.san({
             name: 'name',
             email: 'emails[0]'
-        })(MyComponent);
+        })(
+            san.defineComponent({
+                template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+            })
+        );
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -88,16 +88,16 @@ describe('Connect san component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        connect.san({
+        let MyComponent = connect.san({
             name: 'name',
             email: state => {
                 return state.emails[0];
             }
-        })(MyComponent);
+        })(
+            san.defineComponent({
+                template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+            })
+        );
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -131,11 +131,7 @@ describe('Connect san component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        connect.san(
+        let MyComponent = connect.san(
             {
                 name: 'name',
                 email: 'emails[0]'
@@ -143,7 +139,11 @@ describe('Connect san component', () => {
             {
                 updateInfo: 'for-connect-3'
             }
-        )(MyComponent);
+        )(
+            san.defineComponent({
+                template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+            })
+        );
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -177,11 +177,7 @@ describe('Connect san component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        connect.san(
+        let MyComponent = connect.san(
             {
                 name: 'name',
                 email: 'emails[0]'
@@ -189,7 +185,11 @@ describe('Connect san component', () => {
             [
                 'for-connect-4'
             ]
-        )(MyComponent);
+        )(
+            san.defineComponent({
+                template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+            })
+        );
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -225,14 +225,14 @@ describe('Connect san component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<dl><dt title="{{name}}">{{name}}</dt><dd san-for="email in emails" title="{{email}}">{{email}}</dd></dl>'
-        });
-
-        connect.san({
+        let MyComponent = connect.san({
             name: 'persons[0].name',
             emails: 'persons[0].emails'
-        })(MyComponent);
+        })(
+            san.defineComponent({
+                template: '<dl><dt title="{{name}}">{{name}}</dt><dd san-for="email in emails" title="{{email}}">{{email}}</dd></dl>'
+            })
+        );
 
         store.dispatch('for-connect-persons', [
             {name: 'erik', emails: ['erik168@163.com', 'errorrik@gmail.com']}
@@ -303,13 +303,13 @@ describe('Connect san component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<dl><dt title="{{person.name}}">{{person.name}}</dt><dd san-for="email in person.emails" title="{{email}}">{{email}}</dd></dl>'
-        });
-
-        connect.san({
+        let MyComponent = connect.san({
             person: 'persons[0]'
-        })(MyComponent);
+        })(
+            san.defineComponent({
+                template: '<dl><dt title="{{person.name}}">{{person.name}}</dt><dd san-for="email in person.emails" title="{{email}}">{{email}}</dd></dl>'
+            })
+        );
 
         store.dispatch('for-connect-persons', [
             {name: 'erik', emails: ['erik168@163.com', 'errorrik@gmail.com']}
@@ -380,14 +380,14 @@ describe('Connect san component', () => {
             return updateBuilder().set('forConnect7', name);
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<a>{{name}}</a>'
-        });
-
-        connect.san(
+        let MyComponent = connect.san(
             {name: 'forConnect7'},
             {change: 'for-connect-7'}
-        )(MyComponent);
+        )(
+            san.defineComponent({
+                template: '<a>{{name}}</a>'
+            })
+        );
 
         let wrap = document.createElement('div');
         document.body.appendChild(wrap);
@@ -400,6 +400,65 @@ describe('Connect san component', () => {
             expect(myComponent.data.get('name')).toBe('asyncchange');
 
             myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    });
+
+    it('', done => {
+        store.addAction('for-connect-9', payload => {
+            let builder = updateBuilder()
+                .set('name', payload.name)
+                .set('emails[0]', payload.email);
+
+            return builder;
+        });
+
+        let RawComponent = san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>',
+
+            initData() {
+                return {
+                    name: 'efe',
+                    email: 'ecomfe@gmail.com'
+                }
+            }
+        });
+
+        let MyComponent = connect.san({
+            name: 'name',
+            email: 'emails[0]'
+        })(RawComponent);
+
+        expect(MyComponent === RawComponent).toBeFalsy();
+
+        
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+
+        let myComponent = new RawComponent();
+        myComponent.attach(wrap);
+
+        let myComponent2 = new MyComponent();
+        myComponent2.attach(wrap);
+
+        expect(myComponent.el.title).toBe('efe-ecomfe@gmail.com');
+        expect(myComponent2.el.title).toBe('errorrik-errorrik@gmail.com');
+
+        store.dispatch('for-connect-9', {
+            name: 'erik',
+            email: 'erik@gmail.com'
+        });
+
+        myComponent.data.set('name', 'err');
+        myComponent.data.set('email', 'errorrik@gmail.com');
+
+        san.nextTick(() => {
+            expect(myComponent.el.title).toBe('err-errorrik@gmail.com');
+            expect(myComponent2.el.title).toBe('erik-erik@gmail.com');
+
+            myComponent.dispose();
+            myComponent2.dispose();
             document.body.removeChild(wrap);
             done();
         });
