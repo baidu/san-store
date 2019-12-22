@@ -75,7 +75,7 @@ function connect(mapStates, mapActions, store) {
                     this.data.set(info.dataName, info.getter(store.getState()));
                 }
                 else {
-                    this.data.set(info.dataName, clone(store.getState(info.stateName)));
+                    this.data.set(info.dataName, store.getState(info.stateName));
                 }
             });
 
@@ -93,7 +93,7 @@ function connect(mapStates, mapActions, store) {
                             this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
                         }
                         else {
-                            this.data.set(updateInfo.componentData, clone(store.getState(updateInfo.storeData)));
+                            this.data.set(updateInfo.componentData, store.getState(updateInfo.storeData));
                         }
                     }
                 });
