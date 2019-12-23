@@ -26,6 +26,8 @@ describe('Connect san component', () => {
             })
         );
 
+        console.log(MyComponent.prototype)
+
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
         document.body.appendChild(wrap);

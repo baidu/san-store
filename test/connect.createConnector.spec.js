@@ -20,14 +20,12 @@ describe('Connect createConnector component', () => {
     const manualConnect = connect.createConnector(store);
 
     it('data should be ready when component init', () => {
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        manualConnect({
+        let MyComponent = manualConnect({
             name: 'name',
             email: 'emails[0]'
-        })(MyComponent);
+        })(san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+        }));
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -50,14 +48,12 @@ describe('Connect createConnector component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        manualConnect({
+        let MyComponent = manualConnect({
             name: 'name',
             email: 'emails[0]'
-        })(MyComponent);
+        })(san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+        }));
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -91,16 +87,14 @@ describe('Connect createConnector component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        manualConnect({
+        let MyComponent = manualConnect({
             name: 'name',
             email: state => {
                 return state.emails[0];
             }
-        })(MyComponent);
+        })(san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+        }));
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -134,11 +128,7 @@ describe('Connect createConnector component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        manualConnect(
+        let MyComponent = manualConnect(
             {
                 name: 'name',
                 email: 'emails[0]'
@@ -146,7 +136,9 @@ describe('Connect createConnector component', () => {
             {
                 updateInfo: 'for-connect-3'
             }
-        )(MyComponent);
+        )(san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+        }));
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -180,11 +172,7 @@ describe('Connect createConnector component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
-        });
-
-        manualConnect(
+        let MyComponent = manualConnect(
             {
                 name: 'name',
                 email: 'emails[0]'
@@ -192,7 +180,9 @@ describe('Connect createConnector component', () => {
             [
                 'for-connect-4'
             ]
-        )(MyComponent);
+        )(san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
+        }));
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
@@ -228,14 +218,12 @@ describe('Connect createConnector component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<dl><dt title="{{name}}">{{name}}</dt><dd san-for="email in emails" title="{{email}}">{{email}}</dd></dl>'
-        });
-
-        manualConnect({
+        let MyComponent = manualConnect({
             name: 'persons[0].name',
             emails: 'persons[0].emails'
-        })(MyComponent);
+        })(san.defineComponent({
+            template: '<dl><dt title="{{name}}">{{name}}</dt><dd san-for="email in emails" title="{{email}}">{{email}}</dd></dl>'
+        }));
 
         store.dispatch('for-connect-persons', [
             {name: 'erik', emails: ['erik168@163.com', 'errorrik@gmail.com']}
@@ -306,13 +294,11 @@ describe('Connect createConnector component', () => {
             return builder;
         });
 
-        let MyComponent = san.defineComponent({
-            template: '<dl><dt title="{{person.name}}">{{person.name}}</dt><dd san-for="email in person.emails" title="{{email}}">{{email}}</dd></dl>'
-        });
-
-        manualConnect({
+        let MyComponent = manualConnect({
             person: 'persons[0]'
-        })(MyComponent);
+        })(san.defineComponent({
+            template: '<dl><dt title="{{person.name}}">{{person.name}}</dt><dd san-for="email in person.emails" title="{{email}}">{{email}}</dd></dl>'
+        }));
 
         store.dispatch('for-connect-persons', [
             {name: 'erik', emails: ['erik168@163.com', 'errorrik@gmail.com']}
