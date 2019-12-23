@@ -52,23 +52,34 @@ function connect(mapStates, mapActions, store) {
 
     return function (ComponentClass) {
         let componentProto;
+        let ReturnTarget;
+        let extProto;
 
-        switch (typeof ComponentClass) {
-            case 'function':
-                componentProto = ComponentClass.prototype;
-                break;
-            case 'object':
-                componentProto = ComponentClass;
-                break;
+        if (typeof ComponentClass === 'function') {
+            componentProto = ComponentClass.prototype;
+
+            let F = new Function();
+            F.prototype = componentProto;
+
+            ReturnTarget = function (option) {
+                ComponentClass.call(this, option);
+            };
+
+            ReturnTarget.prototype = new F();
+            ReturnTarget.prototype.constructor = ReturnTarget;
+            extProto = ReturnTarget.prototype;
+        }
+        else {
+            componentProto = ComponentClass || {};
+            ReturnTarget = Object.assign({}, ComponentClass);
+            extProto = ReturnTarget;
         }
 
-        if (!componentProto) {
-            return;
-        }
-
-        // map states
         let inited = componentProto.inited;
-        componentProto.inited = function () {
+        let disposed = componentProto.disposed;
+
+        extProto.inited = function () {
+
             // init data
             mapStateInfo.forEach(info => {
                 if (typeof info.getter === 'function') {
@@ -112,8 +123,7 @@ function connect(mapStates, mapActions, store) {
             }
         };
 
-        let disposed = componentProto.disposed;
-        componentProto.disposed = function () {
+        extProto.disposed = function () {
             store.unlisten(this.__storeListener);
             this.__storeListener = null;
 
@@ -130,12 +140,12 @@ function connect(mapStates, mapActions, store) {
         };
 
         // map actions
-        if (!componentProto.actions) {
-            componentProto.actions = {};
+        if (!extProto.actions) {
+            extProto.actions = {};
 
             if (mapActions instanceof Array) {
                 mapActions.forEach(actionName => {
-                    componentProto.actions[actionName] = function (payload) {
+                    extProto.actions[actionName] = function (payload) {
                         return store.dispatch(actionName, payload);
                     };
                 });
@@ -143,14 +153,14 @@ function connect(mapStates, mapActions, store) {
             else {
                 for (let key in mapActions) {
                     let actionName = mapActions[key];
-                    componentProto.actions[key] = function (payload) {
+                    extProto.actions[key] = function (payload) {
                         return store.dispatch(actionName, payload);
                     };
                 }
             }
         }
 
-        return ComponentClass;
+        return ReturnTarget;
     };
 }
 
