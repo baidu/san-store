@@ -6,7 +6,7 @@
 
 [San](https://baidu.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
 
-虽然应用状态管理已经是流行的理念，我们依然推荐您在开始之前，先看看 [为什么要进行应用状态管理](https://github.com/baidu/san-store/master/doc/why-use-store.md)，可能会有些思考和启发。
+虽然应用状态管理已经是流行的理念，我们依然推荐您在开始之前，先看看 [为什么要进行应用状态管理](https://github.com/baidu/san-store/blob/master/doc/why-use-store.md)，可能会有些思考和启发。
 
 ![flow](https://raw.githubusercontent.com/baidu/san-store/master/doc/flow.png)
 
