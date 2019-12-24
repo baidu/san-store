@@ -55,14 +55,13 @@ store.addAction('changeUserName', function (name) {
 });
 
 
-let UserNameEditor = san.defineComponent({
+let UserNameEditor = connect.san({
+    name: 'user.name'
+})(san.defineComponent({
     submit() {
         store.dispatch('changeUserName', this.data.get('name'));
     }
-});
-connect.san({
-    name: 'user.name'
-})(UserNameEditor);
+}));
 ```
 
 webpack 环境配置网上有太多文章，在此不赘述了
