@@ -98,7 +98,7 @@ connect.san({
 require.config({
     baseUrl: 'src',
     paths: {
-        'san-router': '../dep/san-store/dist/san-store.source'
+        'san-store': '../node_modules/san-store/dist/san-store.source'
     }
 });
 ```
