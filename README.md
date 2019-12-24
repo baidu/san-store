@@ -81,15 +81,13 @@ store.addAction('changeUserName', function (name) {
     return builder().set('user.name', name);
 });
 
-
-var UserNameEditor = san.defineComponent({
+var UserNameEditor = connect.san({
+    name: 'user.name'
+})(san.defineComponent({
     submit: function () {
         store.dispatch('changeUserName', this.data.get('name'));
     }
-});
-connect.san({
-    name: 'user.name'
-})(UserNameEditor);
+}));
 ```
 
 请为 amd loader 正确配置 san-store 的引用路径。通过 npm 安装的项目可以采用下面的配置
@@ -419,11 +417,11 @@ let connector = connect.san(
     {name: 'user.name'},
     {change: 'changeUserName'}
 );
-connector(UserNameEditor);
+let NewUserNameEditor = connector(UserNameEditor);
 
 
 // 通常我们只需要对当前声明的组件进行connect，可以合并成一句
-connect.san(
+let NewUserNameEditor = connect.san(
     {name: 'user.name'},
     {change: 'changeUserName'}
 )(UserNameEditor);
@@ -460,7 +458,7 @@ const connectA = connect.createConnector(storeA);
 const UserNameEditor = san.defineComponent({...});
 
 // 调用手动创建的connectA方法进行storeA和组件连接
-connectA(
+let NewUserNameEditor = connectA(
     {name: 'user.name'},
     {change: 'changeUserName'}
 )(UserNameEditor);
@@ -476,14 +474,12 @@ connectA(
 import {store, connect} from 'san-store';
 
 
-let UserNameEditor = san.defineComponent({
+let UserNameEditor = connect.san(
+    {name: 'user.name'}
+)(san.defineComponent({
     // connect 后，name 数据项由 store 提供
     template: '<div title="{{name}}">......</div>'
-});
-
-connect.san(
-    {name: 'user.name'}
-)(UserNameEditor);
+}));
 ```
 
 
@@ -509,7 +505,7 @@ let UserNameEditor = san.defineComponent({
     }
 });
 
-connect.san(
+UserNameEditor = connect.san(
     {name: 'user.name'},
     {change: 'changeUserName'}
 )(UserNameEditor);
