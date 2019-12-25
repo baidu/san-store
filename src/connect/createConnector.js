@@ -164,30 +164,6 @@ function connect(mapStates, mapActions, store) {
     };
 }
 
-function clone(source) {
-    if (source == null) {
-        return source;
-    }
-
-    if (typeof source === 'object') {
-        if (source instanceof Array) {
-            return source.map(item => clone(item));
-        }
-        else if (source instanceof Date) {
-            return new Date(source.getTime());
-        }
-
-        let result = {};
-        for (let key in source) {
-            result[key] = clone(source[key]);
-        }
-
-        return result;
-    }
-
-    return source;
-}
-
 /**
  * 判断 connect 的 state 是否需要更新
  *
