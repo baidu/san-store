@@ -22,8 +22,8 @@
     - [获取当前应用状态](#获取当前应用状态)  
     - [异步过程](#异步过程)  
 - [组件的connect](#组件的connect)  
-    - [connect.san](#connect.san)
-    - [connect.createConnector](#connect.createConnector)   
+    - [connect.san](#connect.san)  
+    - [connect.createConnector](#connect.createConnector)  
     - [mapstates](#mapstates)  
     - [mapActions](#mapactions)  
 
