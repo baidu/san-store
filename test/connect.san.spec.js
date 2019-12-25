@@ -1,4 +1,4 @@
-import {store, connect} from '../src/main';
+import {store, connect} from 'san-store';
 import san from 'san';
 import {updateBuilder} from 'san-update';
 

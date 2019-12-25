@@ -1,5 +1,5 @@
 
-import Store from '../src/store';
+import {Store} from 'san-store';
 import {updateBuilder} from 'san-update';
 
 describe('Store', () => {
