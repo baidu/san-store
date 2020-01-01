@@ -78,6 +78,12 @@ const myStore = new Store();
 
 dispatch 一个 action
 
+**描述**
+
+`dispatch(name, payload)`
+
+**参数**
+
 - `{string} name` action名称
 - `{*} payload` 给予的数据
 
