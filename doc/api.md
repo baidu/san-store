@@ -80,12 +80,19 @@ dispatch 一个 action
 
 **描述**
 
-`dispatch(name, payload)`
+`{void|Promise} dispatch(name, payload)`
 
 **参数**
 
 - `{string} name` action名称
 - `{*} payload` 给予的数据
+
+**返回**
+
+`{void|Promise}`
+
+- action 为同步时，返回 undefined
+- action 为异步时，返回 Promise
 
 ### listen
 
