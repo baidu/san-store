@@ -32,6 +32,8 @@ const myStore = new Store();
 
 `constructor(options)`
 
+**参数**
+
 - `{Object?} options` 初始化参数
 - `{Object?} options.initData` 容器的初始化数据
 - `{Object?} options.actions` 容器的action函数集合
@@ -46,17 +48,31 @@ const myStore = new Store();
 
 `{*} getState(name)`
 
+**参数**
+
 - `{string} name` state名称
-- `return` 应用状态的值
+
+**返回**
+
+`{*}`，应用状态的值
 
 
 ### addAction
 
 添加一个 action
 
-- `{string} name` action的名称
-- `{Function} action` action函数
+**描述**
 
+`addAction(name, action)`
+
+**参数**
+
+- `{string} name` action的名称
+- `{function (payload, {getState, dispatch})} action` action函数
+
+**返回**
+
+无
 
 ### dispatch
 
@@ -73,8 +89,13 @@ dispatch 一个 action
 
 `listen(listener)`
 
+**参数**
+
 - `{function(change)} listener` 数据变化监听函数
 
+**返回**
+
+无
 
 ### unlisten
 
@@ -84,7 +105,13 @@ dispatch 一个 action
 
 `unlisten(listener)`
 
+**参数**
+
 - `{Function} listener` 数据变化监听函数
+
+**返回**
+
+无
 
 ## connect
 
@@ -95,4 +122,39 @@ connect 用于将 store 实例与 san 组件连接，从而：
 
 ### connect.san
 
+默认 connector，对 san-store 装载时创建的默认 Store 的实例，进行 connect 操作。通常，connect 操作需要进行 2 次调用：
+
+1. 指定 mapStates 和 mapActions
+2. 对相应的组件类进行 connect
+
+**描述**
+
+`{Function}connect.san(mapStates, mapActions)`
+
+**参数**
+
+- `{Object} mapStates` 状态到组件数据的映射信息
+- `{Object|Array?} mapActions` store的action操作到组件actions方法的映射信息
+
+**返回**
+
+`{ComponentClass}function({ComponentClass}Component)`
+
+connect.san 返回一个执行 connect 操作的函数，这个函数可以接受一个组件类作为参数，返回一个新的经过 connect 操作的组件类
+
 ### connect.createConnector
+
+创建 connector。connector 是一个函数，可以通过 2 次调用，对预先指定的 store 执行 connect 操作。调用方式参考上一章节 `connect.san`。
+
+**描述**
+
+`{Function}connect.createConnector(store)`
+
+**参数**
+
+- `{Store} store` connector对应的store实例
+
+**返回**
+
+`{Function}function(mapStates, mapActions)`
+
