@@ -14,10 +14,10 @@
     "font-awesome": "^4.6.3",
     "jquery": "^3.1.1",
     "moment": "^2.15.1",
-    "san": "^3.7.5",
+    "san": "^3.8.0",
     "san-router": "^1.2.0",
     "san-update": "2.1.0",
-    "san-store": "^1.1.0"
+    "san-store": "2.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",
