@@ -70,7 +70,7 @@ import {store} from 'san-store';
 console.log(store.getState('user.name'));
 ```
 
-store 并没有提供修改状态数据的方法，修改状态数据只能通过 dispatch action 来做到，具体细节请参考 [Action](#action) 章节。通过 `addAction` 方法可以添加 action。
+[store](https://github.com/baidu/san-store/blob/master/doc/api.md#store) 并没有提供修改状态数据的方法，修改状态数据只能通过 [dispatch](https://github.com/baidu/san-store/blob/master/doc/api.md#dispatch) action 来做到，具体细节请参考 [Action](#action) 章节。通过 [addAction](https://github.com/baidu/san-store/blob/master/doc/api.md#addaction) 方法可以添加 action。
 
 ```javascript
 store.addAction('changeUserName', name => builder().set('user.name', name));
