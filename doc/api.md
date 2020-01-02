@@ -251,6 +251,27 @@ connect 用于将 store 实例与 san 组件连接，从而：
 
 connect.san 返回一个执行 connect 操作的函数，这个函数可以接受一个组件类作为参数，返回一个新的经过 connect 操作的组件类
 
+**示例**
+
+```javascript
+import {store, connect} from 'san-store';
+
+let UserNameEditor = connect.san(
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+)(san.defineComponent({
+    template: `
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+        </div>
+    `,
+
+    change() {
+        this.actions.change(this.data.get('newName'));
+    }
+}));
+```
+
 ### connect.createConnector
 
 创建 connector。connector 是一个函数，可以通过 2 次调用，对预先指定的 store 执行 connect 操作。调用方式参考上一章节 `connect.san`。
@@ -267,3 +288,39 @@ connect.san 返回一个执行 connect 操作的函数，这个函数可以接�
 
 `{Function}function(mapStates, mapActions)`
 
+**示例**
+
+```javascript
+import {Store, connect} from 'san-store';
+
+// 创建store实例
+const myStore = new Store({
+    initData: {
+        name:'erik'
+    },
+    actions:{
+        changeUserName() {
+            return builder().set('user.name', name);
+        }
+    }
+});
+
+// 调用connect.createConnector方法，传入store实例
+const connectMyStore = connect.createConnector(myStore);
+
+// 调用手动创建的connectMyStore方法，进行myStore和组件连接
+let UserNameEditor = connectMyStore(
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+)(san.defineComponent({
+    template: `
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+        </div>
+    `,
+
+    change() {
+        this.actions.change(this.data.get('newName'));
+    }
+}));
+```
