@@ -107,6 +107,7 @@ Action
 
 Action 是 san-store 最重要的组成部分之一，它：
 
+1. 是一个函数
 1. 在一个 store 内每个 action 具有唯一名称，通过名称 dispatch
 1. 是 store 更新状态的唯一入口
 1. 状态更新是同步的，这使得状态更新可依赖当前状态环境，可被记录、被追溯和重放
@@ -121,7 +122,7 @@ Action 是 san-store 最重要的组成部分之一，它：
 ### 变更应用状态
 
 
-Action 接收一个 payload，返回一个 san-update 的 builder 对象。store 使用 builder 对象生成状态变更函数，并执行它，使 store 内部的状态得到更新。当然，如果当前 action 不期望对 store 的状态进行更新，可以不返回 builder 对象。
+Action 接收一个 payload，返回一个 [san-update](https://github.com/baidu/san-update) 的 builder 对象。store 使用 builder 对象生成状态变更函数，并执行它，使 store 内部的状态得到更新。当然，如果当前 action 不期望对 store 的状态进行更新，可以不返回 builder 对象。
 
 ```javascript
 import {builder} from 'san-update';
@@ -169,7 +170,7 @@ store.addAction('initCount', function (count, {getState}) {
 store.dispatch('initCount', 10);
 ```
 
-如果我们的更新操作仅依赖于当前数据状态项的值，也可以使用 san-update 提供的 apply 方法。
+如果我们的更新操作仅依赖于当前数据状态项的值，也可以使用 [san-update](https://github.com/baidu/san-update) 提供的 apply 方法。
 
 
 ```javascript
@@ -283,9 +284,9 @@ store.dispatch('addArticle', {}).then(() => {
 
 ### connect到默认store
 
-san-store 内置了`connect.san`方法对**默认store实例**和 [San](https://baidu.github.io/san/) 组件进行连接，步骤和 redux 类似：
+[connect.san](https://github.com/baidu/san-store/blob/master/doc/api.md#connectsan) 方法对 **默认store实例** 和 [San](https://baidu.github.io/san/) 组件进行连接，步骤和 redux 类似：
 
-1. 通过 `connect.san` 方法创建一个 connect 组件的函数
+1. 通过 [connect.san](https://github.com/baidu/san-store/blob/master/doc/api.md#connectsan) 方法创建一个 connect 组件的函数
 2. 调用这个函数对组件进行connect
 
 ```javascript
@@ -296,24 +297,26 @@ let connector = connect.san(
     {change: 'changeUserName'}
 );
 let NewUserNameEditor = connector(UserNameEditor);
-
-
-// 通常我们只需要对当前声明的组件进行connect，可以合并成一句
-let NewUserNameEditor = connect.san(
-    {name: 'user.name'},
-    {change: 'changeUserName'}
-)(UserNameEditor);
 ```
 
-`connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
+通常，我们只需要对当前声明的组件进行 connect。此时可以合并成一句
+
+```javascript
+let UserNameEditor = connect.san(
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+)(san.defineComponent({
+    // ...
+}));
+```
 
 ### connect到自己创建的store
 
-当实际业务中真的需要多个store实例时，可以通过这个函数自行创建方法连接store实例和San组件。步骤如下：
+当实际业务中真的需要多个 Store 实例时，可以通过 [connect.createConnector](https://github.com/baidu/san-store/blob/master/doc/api.md#connectcreateconnector) 自行创建 connector，连接 Store 实例和 San 组件。步骤如下：
 
-1. 创建store实例
-2. 通过 `connect.createConnector` 方法创建一个 connect函数
-3. 调用这个函数对刚刚声明的store实例和组件进行connect
+1. 创建 Store 实例
+2. 通过 [connect.createConnector](https://github.com/baidu/san-store/blob/master/doc/api.md#connectcreateconnector) 创建一个 connect函数
+3. 调用这个函数对刚刚声明的 Store 实例和组件进行 connect
 
 ```js
 import {Store, connect} from 'san-store';
@@ -341,7 +344,6 @@ let NewUserNameEditor = connectA(
     {change: 'changeUserName'}
 )(UserNameEditor);
 ```
-`connect.createConnector` 方法的签名为 `{function(Class)}connect.createConnector({Store}store)`
 
 ### 映射store状态与组件data
 
@@ -362,26 +364,25 @@ let UserNameEditor = connect.san(
 
 ### 组件上可直接调用的dispatch action方法
 
-通常我们在组件内通过调用 `store.dispatch(actionName, payload)` 方法更新应用状态，由于 actionName 的应用全局唯一性，名字需要比较完整，对于组件来说这么长的名称会显得比较冗余。通过 `mapActions` 可以在组件的 actions 成员上生成 dispatch action 的快捷方法，让组件可以更便捷的 dispatch action。
+通常我们在组件内通过调用 `store.dispatch(actionName, payload)` 方法更新应用状态。但如果在组件中也这么做，就会有些问题：
 
+- 由于 actionName 的应用全局唯一性，名字需要比较完整，对于组件来说这么长的名称会显得比较冗余
+- 组件实现时，得关心对具体 store 的依赖
 
-`mapActions` 的 key 是要映射到组件 actions 成员上的方法名，value 是 action 的名称。
+通过指定 `mapActions` 可以在组件的 actions 成员上生成 dispatch action 的快捷方法，让组件可以更便捷的 dispatch action。`mapActions` 的 key 是要映射到组件 actions 成员上的方法名，value 是 action 的名称。
 
 
 ```javascript
 import {store, connect} from 'san-store';
 
-
-let UserNameEditor = san.defineComponent({
+let UserNameEditor = connect.san(
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+)(san.defineComponent({
     submit() {
         // 通过 mapActions，可以把 dispatch action 简化成组件自身的方法调用
         // store.dispatch('changeUserName', this.data.get('name'));
         this.actions.change(this.data.get('name'));
     }
-});
-
-UserNameEditor = connect.san(
-    {name: 'user.name'},
-    {change: 'changeUserName'}
-)(UserNameEditor);
+}));
 ```
