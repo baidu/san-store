@@ -85,12 +85,18 @@ myStore.getState('user.name');
 
 ### addAction
 
-添加一个 action。action 是一个函数，它
+添加一个 Action。它是一个函数:
 
 - 接受 dispatch 时的 payload，包含 getState 和 dispatch 方法的 context 对象
 - 执行相应的动作，整个过程可以是同步或异步
 - 返回 [san-update](https://github.com/baidu/san-update) 的 builder 对象时，同步变更 store 状态
 - 返回 Promise 对象时，为异步过程。过程中可以 dispatch 任何同步的 action，对 store 进行状态变更
+
+Action 签名如下：
+
+```
+{builder?} function ({*}payload, {{Function}getState, {Function}dispatch})
+```
 
 **描述**
 
