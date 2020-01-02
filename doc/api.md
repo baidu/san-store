@@ -100,6 +100,32 @@ myStore.getState('user.name');
 
 无
 
+**示例**
+
+```javascript
+// 同步 Action
+store.addAction('setUserName', function (name) {
+    return builder().set('user.name', name);
+});
+
+store.addAction('logining', function (logining) {
+    return builder().set('logining', logining);
+});
+
+// 异步 Action
+store.addAction('login', function (payload, {getState, dispatch}) {
+    if (getState('user.name') === payload.name) {
+        return;
+    }
+
+    dispatch('logining', true);
+    return userService.validate(payload).then(() => {
+        dispatch('setUserName', payload.name);
+        dispatch('logining', false);
+    })
+});
+```
+
 ### dispatch
 
 dispatch 一个 action
@@ -120,6 +146,15 @@ dispatch 一个 action
 - action 为同步时，返回 undefined
 - action 为异步时，返回 Promise
 
+**示例**
+
+```javascript
+store.dispatch('login', {
+    name: 'errorrik',
+    password: 'xxxxx'
+});
+```
+
 ### listen
 
 监听 store 数据变化
@@ -130,11 +165,40 @@ dispatch 一个 action
 
 **参数**
 
-- `{function(change)} listener` 数据变化监听函数
+- `{function(changes)} listener` 数据变化监听函数
+
+listener 接收的 changes 参数是一个数据变更数组，因为一次 san-update 的 builder 可能包含多个状态数据变更操作。每个 change 对象可能包含如下属性：
+
+```
+{
+    $change: {string},
+    target: {Array<string>},
+    oldValue: {*},
+    newValue: {*},
+    splice: {
+        index: {number},
+        deleteCount: {number},
+        insertions: {Array}
+    }
+}
+```
 
 **返回**
 
 无
+
+**示例**
+
+```javascript
+function storeListener(changes) {
+    changes.forEach(change => {
+        // read change and do sth
+        console.log(change);
+    });
+}
+
+store.listen(storeListener);
+```
 
 ### unlisten
 
@@ -151,6 +215,12 @@ dispatch 一个 action
 **返回**
 
 无
+
+**示例**
+
+```javascript
+store.unlisten(storeListener);
+```
 
 ## connect
 
