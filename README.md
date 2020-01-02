@@ -105,19 +105,15 @@ let myStore = new Store({
 Action
 ----
 
-Action 是 san-store 最重要的组成部分之一，它：
+通过 [addAction](https://github.com/baidu/san-store/blob/master/doc/api.md#addaction) 方法可以为 [Store](https://github.com/baidu/san-store/blob/master/doc/api.md#store) 添加 Action。 Action 是 san-store 最重要的组成部分之一，它：
 
 1. 是一个函数
-1. 在一个 store 内每个 action 具有唯一名称，通过名称 dispatch
-1. 是 store 更新状态的唯一入口
+1. 在一个 [store](https://github.com/baidu/san-store/blob/master/doc/api.md#store) 内每个 action 具有唯一名称，通过名称 [dispatch](https://github.com/baidu/san-store/blob/master/doc/api.md#dispatch)
+1. 是 [store](https://github.com/baidu/san-store/blob/master/doc/api.md#store) 更新状态的唯一入口
 1. 状态更新是同步的，这使得状态更新可依赖当前状态环境，可被记录、被追溯和重放
 
 
-如果你使用了 san-store，**Action 应该是你业务组件的唯一出口**：用户操作事件等需要改变应用状态时，都应该 dispatch Action。它的签名如下：
-
-```
-{builder?} function ({*}payload, {{Function}getState, {Function}dispatch})
-```
+如果你使用了 san-store，**Action 应该是你业务组件的唯一出口**：用户操作事件等需要改变应用状态时，都应该 dispatch Action。
 
 ### 变更应用状态
 
