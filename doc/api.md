@@ -39,6 +39,27 @@ const myStore = new Store();
 - `{Object?} options.actions` 容器的action函数集合
 - `{boolean?} options.log` 是否记录日志
 
+**示例**
+
+```javascript
+import {Store} from 'san-store';
+import {builder} from 'san-update';
+
+
+let myStore = new Store({
+    initData: {
+        user: {
+            name: 'your name'
+        }
+    },
+
+    actions: {
+        changeUserName(name) {
+            return builder().set('user.name', name);
+        }
+    }
+});
+```
 
 ### getState
 
@@ -56,6 +77,11 @@ const myStore = new Store();
 
 `{*}`，应用状态的值
 
+**示例**
+
+```javascript
+myStore.getState('user.name');
+```
 
 ### addAction
 
