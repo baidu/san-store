@@ -13,21 +13,6 @@
 > 提示：使用 san-store 需要同时使用 [san-update](https://github.com/baidu/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
 
 
-- [下载](#下载)  
-- [使用](#使用)  
-- [示例项目](#示例项目)   
-- [Store和默认实例](#store和默认实例)  
-- [Action](#action)  
-    - [变更应用状态](#变更应用状态)  
-    - [获取当前应用状态](#获取当前应用状态)  
-    - [异步过程](#异步过程)  
-- [组件的connect](#组件的connect)  
-    - [connect.san](#connect.san)  
-    - [connect.createConnector](#connect.createConnector)  
-    - [mapstates](#mapstates)  
-    - [mapActions](#mapactions)  
-
-
 下载
 ----
 
@@ -40,10 +25,6 @@ $ npm i --save san-store san-update
 
 使用
 ----
-
-### Webpack + Babel
-
-通过 named import 导入
 
 ```javascript
 import {store, connect} from 'san-store';
@@ -64,49 +45,10 @@ let UserNameEditor = connect.san({
 }));
 ```
 
-webpack 环境配置网上有太多文章，在此不赘述了
 
+从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos项目](https://github.com/baidu/san-store/tree/master/example/todos) 展示了如何在项目里使用 san-store 进行状态管理。
 
-### AMD
-
-通过 require 拿到的 exports 上包含 store 和 connect
-
-```javascript
-var sanStore = require('san-store');
-var store = sanStore.store;
-var connect = sanStore.connect;
-var builder = require('san-update').builder;
-
-store.addAction('changeUserName', function (name) {
-    return builder().set('user.name', name);
-});
-
-var UserNameEditor = connect.san({
-    name: 'user.name'
-})(san.defineComponent({
-    submit: function () {
-        store.dispatch('changeUserName', this.data.get('name'));
-    }
-}));
-```
-
-请为 amd loader 正确配置 san-store 的引用路径。通过 npm 安装的项目可以采用下面的配置
-
-```javascript
-require.config({
-    baseUrl: 'src',
-    paths: {
-        'san-store': '../node_modules/san-store/dist/san-store.source'
-    }
-});
-```
-
-
-
-示例项目
-----
-
-从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos](https://github.com/baidu/san-store/tree/master/example/todos) 是如何在项目里使用 san-store 进行状态管理的示例项目。
+本文档描述了 san-store 的基本使用场景，想了解 san-store 都提供了什么，可以参阅 [API文档](https://github.com/baidu/san-store/tree/master/doc/api.md)
 
 
 Store和默认实例
@@ -342,7 +284,7 @@ store.dispatch('addArticle', {}).then(() => {
 组件的connect
 ----
 
-### connect.san
+### connect到默认store
 
 san-store 内置了`connect.san`方法对**默认store实例**和 [San](https://baidu.github.io/san/) 组件进行连接，步骤和 redux 类似：
 
@@ -368,7 +310,7 @@ let NewUserNameEditor = connect.san(
 
 `connect.san` 方法的签名为，`{function(Class)}connect.san({Object}mapStates, {Object?}mapActions)`
 
-### connect.createConnector
+### connect到自己创建的store
 
 当实际业务中真的需要多个store实例时，可以通过这个函数自行创建方法连接store实例和San组件。步骤如下：
 
@@ -403,9 +345,8 @@ let NewUserNameEditor = connectA(
 )(UserNameEditor);
 ```
 `connect.createConnector` 方法的签名为 `{function(Class)}connect.createConnector({Store}store)`
-### mapStates
 
-`Object`
+### 映射store状态与组件data
 
 `mapStates` 参数指定了要把哪些状态注入到组件，key 是要注入到组件的数据项名称，value 是 store 中状态项的名称。
 
@@ -422,9 +363,7 @@ let UserNameEditor = connect.san(
 ```
 
 
-### mapActions
-
-`Object`
+### 组件上可直接调用的dispatch action方法
 
 通常我们在组件内通过调用 `store.dispatch(actionName, payload)` 方法更新应用状态，由于 actionName 的应用全局唯一性，名字需要比较完整，对于组件来说这么长的名称会显得比较冗余。通过 `mapActions` 可以在组件的 actions 成员上生成 dispatch action 的快捷方法，让组件可以更便捷的 dispatch action。
 
@@ -449,8 +388,3 @@ UserNameEditor = connect.san(
     {change: 'changeUserName'}
 )(UserNameEditor);
 ```
-
-
-
-
-
