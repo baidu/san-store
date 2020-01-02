@@ -12,6 +12,12 @@
 
 > 提示：使用 san-store 需要同时使用 [san-update](https://github.com/baidu/san-update) 2.x 创建状态变更器，san-store 将使用此变更器更新 store 中的应用状态。
 
+- [下载](#下载)
+- [使用](#使用)
+- [单Store与多Store](#单store与多store) 
+- [Action](#action) 
+- [组件的connect](#组件的connect) 
+
 
 下载
 ----
@@ -48,30 +54,21 @@ let UserNameEditor = connect.san({
 
 从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos项目](https://github.com/baidu/san-store/tree/master/example/todos) 展示了如何在项目里使用 san-store 进行状态管理。
 
-本文档描述了 san-store 的基本使用场景，想了解 san-store 都提供了什么，可以参阅 [API文档](https://github.com/baidu/san-store/tree/master/doc/api.md)
+本文档描述了 san-store 的基本使用场景。想了解 san-store 都提供了什么，可以参阅 [API文档](https://github.com/baidu/san-store/tree/master/doc/api.md)
 
 
-Store和默认实例
+单Store与多Store
 ----
 
-一个应用具有唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 store 实例。
+一个应用具有唯一的应用状态源，在一个地方管理整个应用的所有状态，是一个比较共识的方式。所以 san-store 提供了默认的 Store 实例。绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store。
 
-复杂业务场景下，当同一系统中有不同团队开发自己的业务模块，各团队之间没有状态共享，可以考虑分别建立store实例进行开发，相关细节请参考[connect.createConnector](#connect.createConnector)章节。
-
-但绝大多数时候，应用开发者不需要手工创建自己的 Store 实例，只需要 import 默认的 store 实例。
 
 ```javascript
 import {store} from 'san-store';
+
+// 通过 getState 方法，获取 store 中的状态数据。
+console.log(store.getState('user.name'));
 ```
-
-通过 `getState` 方法，可以获取 store 中的状态数据。
-
-
-```javascript
-let appState = store.getState('user.name');
-console.log(appState);
-```
-
 
 store 并没有提供修改状态数据的方法，修改状态数据只能通过 dispatch action 来做到，具体细节请参考 [Action](#action) 章节。通过 `addAction` 方法可以添加 action。
 
@@ -80,7 +77,7 @@ store.addAction('changeUserName', name => builder().set('user.name', name));
 ```
 
 
-当然，你也可以通过 new Store 创建自己的 Store 实例。创建时可以传入初始化数据和声明 actions。
+当同一系统中有不同团队开发自己的业务模块，各团队之间没有状态共享，可以考虑分别建立 Store 实例进行开发。通过 new Store 创建自己的 Store 实例。创建时可以传入初始化数据和声明 actions。
 
 ```javascript
 import {Store} from 'san-store';
@@ -99,7 +96,7 @@ let myStore = new Store({
             return builder().set('user.name', name);
         }
     }
-})
+});
 ```
 
 本节最后，还是要强调下，应用开发应当遵循 **一个应用具有唯一的应用状态源**。说白了就是 **要按常理出牌**。
