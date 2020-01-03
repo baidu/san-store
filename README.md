@@ -52,7 +52,7 @@ let UserNameEditor = connect.san({
 ```
 
 
-从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos项目](https://github.com/baidu/san-store/tree/master/example/todos) 展示了如何在项目里使用 san-store 进行状态管理。
+从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos项目](https://github.com/baidu/san-store/tree/master/example/todos) 和 [RealWorld App](https://github.com/ecomfe/san-realworld-app) 展示了如何在项目里使用 san-store 进行状态管理。
 
 本文档描述了 san-store 的基本使用场景。想了解 san-store 都提供了什么，可以参阅 [API文档](https://github.com/baidu/san-store/tree/master/doc/api.md)
 
