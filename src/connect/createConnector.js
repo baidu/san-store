@@ -233,3 +233,17 @@ export default function createConnector(store) {
 
     throw new Error(store + ' must be an instance of Store!');
 }
+
+function extendsAsFunc(RawClass) {
+    let F = new Function();
+    F.prototype = RawClass.prototype;
+
+    let NewClass = function (option) {
+        RawClass.call(this, option);
+    };
+
+    NewClass.prototype = new F();
+    NewClass.prototype.constructor = ReturnTarget;
+
+    return NewClass;
+}
