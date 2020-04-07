@@ -26,7 +26,58 @@ describe('Connect san component', () => {
             })
         );
 
-        console.log(MyComponent.prototype)
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+        expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        myComponent.dispose();
+        document.body.removeChild(wrap);
+    });
+
+    it('data should be ready when component init, component declare as class', () => {
+        class RawComponent extends san.Component {
+
+        }
+        RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
+
+        let MyComponent = connect.san({
+            name: 'name',
+            email: 'emails[0]'
+        })(
+            RawComponent
+        );
+
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+        expect(myComponent.data.get('name')).toBe('errorrik');
+        expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        myComponent.dispose();
+        document.body.removeChild(wrap);
+    });
+
+    it('static prop should not be lost', () => {
+        let RawComponent = san.defineComponent({
+        });
+        RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
+
+        let MyComponent = connect.san({
+            name: 'name',
+            email: 'emails[0]'
+        })(
+            RawComponent
+        );
+
 
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
