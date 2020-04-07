@@ -10,6 +10,50 @@ import parseName from '../parse-name';
 import Store from '../store';
 import emitDevtool from '../devtool/emitter';
 
+let extendsAsClass;
+
+try {
+    extendsAsClass = new Function('RawClass', "return class extends RawClass {}");
+}
+catch (ex) {}
+
+function extendsAsFunc(RawClass) {
+    let F = new Function();
+    F.prototype = RawClass.prototype;
+
+    let NewClass = function (option) {
+        RawClass.call(this, option);
+    };
+
+    NewClass.prototype = new F();
+    NewClass.prototype.constructor = NewClass;
+
+    return NewClass;
+}
+
+function extendsComponent(ComponentClass) {
+    let NewComponentClass;
+    if (ComponentClass.toString().indexOf('class') === 0) {
+        NewComponentClass = extendsAsClass(ComponentClass);
+    }
+    else {
+        NewComponentClass = extendsAsFunc(ComponentClass);
+    }
+
+    NewComponentClass.template = ComponentClass.template;
+    NewComponentClass.components = ComponentClass.components;
+    NewComponentClass.trimWhitespace = ComponentClass.trimWhitespace;
+    NewComponentClass.delimiters = ComponentClass.delimiters;
+    NewComponentClass.autoFillStyleAndId = ComponentClass.autoFillStyleAndId;
+    NewComponentClass.filters = ComponentClass.filters;
+    NewComponentClass.computed = ComponentClass.computed;
+    NewComponentClass.messages = ComponentClass.messages;
+
+    return NewComponentClass;
+}
+
+
+
 /**
  * san组件的connect
  *
@@ -56,17 +100,8 @@ function connect(mapStates, mapActions, store) {
         let extProto;
 
         if (typeof ComponentClass === 'function') {
+            ReturnTarget = extendsComponent(ComponentClass);
             componentProto = ComponentClass.prototype;
-
-            let F = new Function();
-            F.prototype = componentProto;
-
-            ReturnTarget = function (option) {
-                ComponentClass.call(this, option);
-            };
-
-            ReturnTarget.prototype = new F();
-            ReturnTarget.prototype.constructor = ReturnTarget;
             extProto = ReturnTarget.prototype;
         }
         else {
@@ -232,18 +267,4 @@ export default function createConnector(store) {
     }
 
     throw new Error(store + ' must be an instance of Store!');
-}
-
-function extendsAsFunc(RawClass) {
-    let F = new Function();
-    F.prototype = RawClass.prototype;
-
-    let NewClass = function (option) {
-        RawClass.call(this, option);
-    };
-
-    NewClass.prototype = new F();
-    NewClass.prototype.constructor = ReturnTarget;
-
-    return NewClass;
 }
