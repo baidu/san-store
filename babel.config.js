@@ -5,7 +5,7 @@ const presets = [
         targets: {
           ie: '8'
         }
-      },
+      }
     ],
   ];
   module.exports = { presets };
