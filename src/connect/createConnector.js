@@ -40,7 +40,7 @@ function extendsComponent(ComponentClass) {
         NewComponentClass = extendsAsFunc(ComponentClass);
     }
 
-    NewComponentClass.template = NewComponentClass.template;
+    NewComponentClass.template = ComponentClass.template;
     NewComponentClass.components = ComponentClass.components;
     NewComponentClass.trimWhitespace = ComponentClass.trimWhitespace;
     NewComponentClass.delimiters = ComponentClass.delimiters;
