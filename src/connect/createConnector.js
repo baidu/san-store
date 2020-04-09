@@ -22,7 +22,7 @@ function extendsAsFunc(RawClass) {
     F.prototype = RawClass.prototype;
 
     let NewClass = function (option) {
-        RawClass.call(this, option);
+        return RawClass.call(this, option) || this;
     };
 
     NewClass.prototype = new F();
@@ -40,7 +40,7 @@ function extendsComponent(ComponentClass) {
         NewComponentClass = extendsAsFunc(ComponentClass);
     }
 
-    NewComponentClass.template = ComponentClass.template;
+    NewComponentClass.template = NewComponentClass.template;
     NewComponentClass.components = ComponentClass.components;
     NewComponentClass.trimWhitespace = ComponentClass.trimWhitespace;
     NewComponentClass.delimiters = ComponentClass.delimiters;
