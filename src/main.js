@@ -27,7 +27,7 @@ emitDevtool('store-default-inited', {store});
  *
  * @type {string}
  */
-export let version = '2.0.1';
+export let version = '2.0.2';
 
 export {Store};
 
