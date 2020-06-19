@@ -52,19 +52,25 @@ function extendsComponent(ComponentClass) {
     return NewComponentClass;
 }
 
-
-
 /**
- * san组件的connect
+ * 统一处理 mapStates，mapstatus 现在可以传递 ['name', 'age'...]这种形式。
  *
  * @param {Object} mapStates 状态到组件数据的映射信息
- * @param {Object|Array?} mapActions store的action操作到组件actions方法的映射信息
- * @param {Store} store 指定的store实例
- * @return {function(ComponentClass)}
+ * @return {Array}
  */
-function connect(mapStates, mapActions, store) {
+function formatStateMapper(mapStates) {
     let mapStateInfo = [];
-
+    // 支持直接传递 ['name', 'age'...] 来替代 {name: 'name', age: 'age'}
+    if (mapStates instanceof Array) {
+        for (let i = 0; i < mapStates.length; i++) {
+            let mapState = mapStates[i];
+            typeof mapState === 'string' && mapStateInfo.push({
+                dataName: mapState,
+                stateName: parseName(mapState)
+            });
+        }
+        return mapStateInfo;
+    }
     for (let key in mapStates) {
         if (mapStates.hasOwnProperty(key)) {
             let mapState = mapStates[key];
@@ -87,13 +93,21 @@ function connect(mapStates, mapActions, store) {
             mapInfo && mapStateInfo.push(mapInfo);
         }
     }
+    return mapStateInfo;
+}
 
-    emitDevtool('store-connected', {
-        mapStates,
-        mapActions,
-        store
-    });
 
+// 给用户的 comp 添加 store 的监听 和 卸载监听
+function addMapperListenerOnComponent(mappers, store, getMappersOnComponent) {
+    function getCompMappers(comp) {
+        let mapStates = [];
+        comp.mapStates && (mapStates = mapStates.concat(formatStateMapper(comp.mapStates)));
+        comp.mapGetters && (mapStates = mapStates.concat(formatStateMapper(comp.mapGetters)));
+        return {
+            mapStates,
+            mapActions: comp.mapActions
+        };
+    }
     return function (ComponentClass) {
         let componentProto;
         let ReturnTarget;
@@ -110,13 +124,15 @@ function connect(mapStates, mapActions, store) {
             extProto = ReturnTarget;
         }
 
+        getMappersOnComponent && (mappers = getCompMappers(extProto));
+
         let inited = componentProto.inited;
         let disposed = componentProto.disposed;
 
         extProto.inited = function () {
 
             // init data
-            mapStateInfo.forEach(info => {
+            mappers.mapStates.forEach(info => {
                 if (typeof info.getter === 'function') {
                     this.data.set(info.dataName, info.getter(store.getState()));
                 }
@@ -127,7 +143,7 @@ function connect(mapStates, mapActions, store) {
 
             // listen store change
             this.__storeListener = diff => {
-                mapStateInfo.forEach(info => {
+                mappers.mapStates.forEach(info => {
                     if (typeof info.getter === 'function') {
                         this.data.set(info.dataName, info.getter(store.getState()));
                         return;
@@ -147,10 +163,10 @@ function connect(mapStates, mapActions, store) {
             store.listen(this.__storeListener);
 
             emitDevtool('store-comp-inited', {
-                mapStates,
-                mapActions,
+                mapStates: mappers.mapStates,
+                mapActions: mappers.mapActions,
                 store,
-                component: this,
+                component: this
             });
 
             if (typeof inited === 'function') {
@@ -163,10 +179,10 @@ function connect(mapStates, mapActions, store) {
             this.__storeListener = null;
 
             emitDevtool('store-comp-disposed', {
-                mapStates,
-                mapActions,
+                mapStates: mappers.mapStates,
+                mapActions: mappers.mapActions,
                 store,
-                component: this,
+                component: this
             });
 
             if (typeof disposed === 'function') {
@@ -178,16 +194,16 @@ function connect(mapStates, mapActions, store) {
         if (!extProto.actions) {
             extProto.actions = {};
 
-            if (mapActions instanceof Array) {
-                mapActions.forEach(actionName => {
+            if (mappers.mapActions instanceof Array) {
+                mappers.mapActions.forEach(actionName => {
                     extProto.actions[actionName] = function (payload) {
                         return store.dispatch(actionName, payload);
                     };
                 });
             }
             else {
-                for (let key in mapActions) {
-                    let actionName = mapActions[key];
+                for (let key in mappers.mapActions) {
+                    let actionName = mappers.mapActions[key];
                     extProto.actions[key] = function (payload) {
                         return store.dispatch(actionName, payload);
                     };
@@ -197,6 +213,35 @@ function connect(mapStates, mapActions, store) {
 
         return ReturnTarget;
     };
+}
+
+
+/**
+ * san组件的connect
+ *
+ * @param {Object} mapStates 状态到组件数据的映射信息
+ * @param {Object|Array?} mapActions store的action操作到组件actions方法的映射信息
+ * @param {Store} store 指定的store实例
+ * @return {function(ComponentClass)}
+ */
+function connect(mapStates, mapActions, store) {
+    let mapStateInfo = formatStateMapper(mapStates);
+
+    emitDevtool('store-connected', {
+        mapStates,
+        mapActions,
+        store
+    });
+
+    return addMapperListenerOnComponent({
+        mapStates: mapStateInfo,
+        mapActions
+    }, store);
+}
+
+function connectMapper(store) {
+    let getMappersOnComponent = true;
+    return addMapperListenerOnComponent(null, store, getMappersOnComponent);
 }
 
 /**
@@ -261,10 +306,17 @@ function calcUpdateInfo(info, diff) {
  * @param {Store} store store实例
  * @return {Function}
  */
-export default function createConnector(store) {
+export const createConnector = store => {
     if (store instanceof Store) {
         return (mapStates, mapActions) => connect(mapStates, mapActions, store);
     }
 
     throw new Error(store + ' must be an instance of Store!');
-}
+};
+export const createMapperConnector = store => {
+    if (store instanceof Store) {
+        return connectMapper(store);
+    }
+
+    throw new Error(store + ' must be an instance of Store!');
+};
