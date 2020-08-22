@@ -173,7 +173,6 @@ export default class Store {
         }
 
         this.actionCtrl.start(actionId, name, payload, parentId);
-
         let context = {
             getState: name => this.getState(name),
             dispatch: (name, payload) => this._dispatch(name, payload, actionId)
@@ -205,20 +204,16 @@ export default class Store {
                 }
             }
         }
-
+        emitDevtool('store-dispatch-start', {
+            store: this,
+            diff: updateInfo ? updateInfo[1] : null,
+            actionInfo: this.actionCtrl.getById(actionId)
+        });
         this.actionCtrl.done(actionId);
 
         if (updateInfo) {
             this._fire(updateInfo[1]);
         }
-        emitDevtool('store-dispatched', {
-            store: this,
-            diff: updateInfo ? updateInfo[1] : null,
-            name,
-            payload,
-            actionId,
-            parentId
-        });
     }
 }
 
@@ -294,7 +289,10 @@ class ActionControl {
 
         if (childsDone && actionInfo.selfDone) {
             actionInfo.done = true;
-
+            emitDevtool('store-dispatch-done', {
+                store: this.store,
+                actionInfo
+            });
             if (this.store.log) {
                 actionInfo.endTime = (new Date()).getTime()
             }
