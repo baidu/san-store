@@ -182,6 +182,10 @@ export default class Store {
         let updateInfo;
         if (actionReturn) {
             if (typeof actionReturn.then === 'function') {
+                emitDevtool('store-dispatch-start', {
+                    store: this,
+                    actionInfo: this.actionCtrl.getById(actionId)
+                });
                 return actionReturn.then(returns => {
                     this.actionCtrl.done(actionId);
                     return returns;
@@ -204,11 +208,6 @@ export default class Store {
                 }
             }
         }
-        emitDevtool('store-dispatch-start', {
-            store: this,
-            diff: updateInfo ? updateInfo[1] : null,
-            actionInfo: this.actionCtrl.getById(actionId)
-        });
         this.actionCtrl.done(actionId);
 
         if (updateInfo) {
@@ -289,14 +288,13 @@ class ActionControl {
 
         if (childsDone && actionInfo.selfDone) {
             actionInfo.done = true;
+            if (this.store.log) {
+                actionInfo.endTime = (new Date()).getTime()
+            }
             emitDevtool('store-dispatch-done', {
                 store: this.store,
                 actionInfo
             });
-            if (this.store.log) {
-                actionInfo.endTime = (new Date()).getTime()
-            }
-
             if (actionInfo.parentId) {
                 this.detectDone(actionInfo.parentId);
             }
