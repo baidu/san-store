@@ -300,29 +300,33 @@ class ActionControl {
      */
     detectDone(id) {
         let actionInfo = this.getById(id);
-        let childsDone = true;
-        actionInfo.childs.forEach(child => {
-            childsDone = this.getById(child).done && childsDone;
-        });
 
-        if (childsDone && actionInfo.selfDone) {
-            actionInfo.done = true;
-
-            if (this.store.log) {
-                actionInfo.endTime = (new Date()).getTime();
-                emitDevtool('store-dispatched', {
-                    store: this.store,
-                    diff: actionInfo.updateInfo ? actionInfo.updateInfo[1] : null,
-                    name: actionInfo.name,
-                    payload: actionInfo.payload,
-                    actionId: actionInfo.id,
-                    parentId: actionInfo.parentId
-                });
+        if (!actionInfo.selfDone) {
+            return;
+        }
+        
+        for (var i = 0; i < actionInfo.childs.length; i++) {
+            if (!this.getById(actionInfo.childs[i]).done) {
+                return;
             }
+        }
 
-            if (actionInfo.parentId) {
-                this.detectDone(actionInfo.parentId);
-            }
+        actionInfo.done = true;
+
+        if (this.store.log) {
+            actionInfo.endTime = (new Date()).getTime();
+            emitDevtool('store-dispatched', {
+                store: this.store,
+                diff: actionInfo.updateInfo ? actionInfo.updateInfo[1] : null,
+                name: actionInfo.name,
+                payload: actionInfo.payload,
+                actionId: actionInfo.id,
+                parentId: actionInfo.parentId
+            });
+        }
+
+        if (actionInfo.parentId) {
+            this.detectDone(actionInfo.parentId);
         }
     }
 
