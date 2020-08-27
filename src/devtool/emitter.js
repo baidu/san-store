@@ -6,8 +6,10 @@
  * @author luyuan
  */
 
- import emitSanDevtool from './san-devtool';
+let isBrowser = typeof window !== 'undefined';
 
- export default function emitDevtool() {
-    emitSanDevtool.apply(null, arguments);
- }
+ export default function emitDevtool(name, args) {
+   if (isBrowser && window['__san_devtool__']) {
+       window['__san_devtool__'].emit(name, args);
+   }
+}

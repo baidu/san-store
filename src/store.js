@@ -88,7 +88,7 @@ export default class Store {
         }
         // Alternatives for not receiving the events including default store
         // info from connector.
-        emitDevtool('store-listened', {
+        this.log && emitDevtool('store-listened', {
             store: this,
             listener
         });
@@ -108,7 +108,7 @@ export default class Store {
         }
         // Alternatives for not receiving the events including default store
         // info from connector.
-        emitDevtool('store-unlistened', {
+        this.log && emitDevtool('store-unlistened', {
             store: this,
             listener
         });
@@ -143,7 +143,7 @@ export default class Store {
 
         this.actions[name] = action;
 
-        emitDevtool('store-action-added', {store: this, action});
+        this.log && emitDevtool('store-action-added', {store: this, action});
     }
 
     /**
@@ -237,14 +237,15 @@ class ActionControl {
             id,
             name,
             parentId,
-            payload,
             childs: []
         };
 
         if (this.store.log) {
             actionInfo.startTime = (new Date()).getTime();
+            actionInfo.payload = payload;
         }
 
+        // TODO: clean?
         this.list[this.len] = actionInfo;
         this.index[id] = this.len++;
 
@@ -252,7 +253,7 @@ class ActionControl {
             this.getById(parentId).childs.push(id);
         }
 
-        emitDevtool('store-dispatch', {
+        this.store.log && emitDevtool('store-dispatch', {
             store: this.store,
             name,
             payload,
@@ -265,13 +266,14 @@ class ActionControl {
             dispatch: (name, payload) => this.store._dispatch(name, payload, id)
         });
 
-        actionInfo.actionReturn = returnValue;
-
         if (typeof returnValue.buildWithDiff === 'function') {
             let updateInfo = returnValue.buildWithDiff()(this.store.raw);
             updateInfo[1] = flattenDiff(updateInfo[1]);
 
-            actionInfo.updateInfo = updateInfo;
+            if (this.store.log) {
+                actionInfo.updateInfo = updateInfo;
+            }
+
             return updateInfo;
         }
         
@@ -305,18 +307,18 @@ class ActionControl {
 
         if (childsDone && actionInfo.selfDone) {
             actionInfo.done = true;
-            if (this.store.log) {
-                actionInfo.endTime = (new Date()).getTime()
-            }
 
-            emitDevtool('store-dispatched', {
-                store: this.store,
-                diff: actionInfo.updateInfo ? actionInfo.updateInfo[1] : null,
-                name: actionInfo.name,
-                payload: actionInfo.payload,
-                actionId: actionInfo.id,
-                parentId: actionInfo.parentId
-            });
+            if (this.store.log) {
+                actionInfo.endTime = (new Date()).getTime();
+                emitDevtool('store-dispatched', {
+                    store: this.store,
+                    diff: actionInfo.updateInfo ? actionInfo.updateInfo[1] : null,
+                    name: actionInfo.name,
+                    payload: actionInfo.payload,
+                    actionId: actionInfo.id,
+                    parentId: actionInfo.parentId
+                });
+            }
 
             if (actionInfo.parentId) {
                 this.detectDone(actionInfo.parentId);

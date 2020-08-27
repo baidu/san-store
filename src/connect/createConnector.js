@@ -88,7 +88,7 @@ function connect(mapStates, mapActions, store) {
         }
     }
 
-    emitDevtool('store-connected', {
+    store.log && emitDevtool('store-connected', {
         mapStates,
         mapActions,
         store
@@ -146,7 +146,7 @@ function connect(mapStates, mapActions, store) {
             };
             store.listen(this.__storeListener);
 
-            emitDevtool('store-comp-inited', {
+            store.log && emitDevtool('store-comp-inited', {
                 mapStates,
                 mapActions,
                 store,
@@ -162,7 +162,7 @@ function connect(mapStates, mapActions, store) {
             store.unlisten(this.__storeListener);
             this.__storeListener = null;
 
-            emitDevtool('store-comp-disposed', {
+            store.log && emitDevtool('store-comp-disposed', {
                 mapStates,
                 mapActions,
                 store,
