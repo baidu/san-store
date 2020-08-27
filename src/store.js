@@ -172,46 +172,35 @@ export default class Store {
             return;
         }
 
-        this.actionCtrl.start(actionId, name, payload, parentId);
-        let context = {
-            getState: name => this.getState(name),
-            dispatch: (name, payload) => this._dispatch(name, payload, actionId)
-        };
-        let actionReturn = action.call(this, payload, context);
+        let actionReturn = this.actionCtrl.start(actionId, name, action, payload, parentId);
+        
 
-        let updateInfo;
+        let diff;
         if (actionReturn) {
             if (typeof actionReturn.then === 'function') {
-                emitDevtool('store-dispatch-start', {
-                    store: this,
-                    actionInfo: this.actionCtrl.getById(actionId)
-                });
                 return actionReturn.then(returns => {
                     this.actionCtrl.done(actionId);
                     return returns;
                 });
             }
 
-            if (typeof actionReturn.buildWithDiff === 'function') {
-                let oldValue = this.raw;
-                updateInfo = actionReturn.buildWithDiff()(oldValue);
-                updateInfo[1] = flattenDiff(updateInfo[1]);
-                this.raw = updateInfo[0];
+            let oldValue = this.raw;
+            this.raw = actionReturn[0];
+            diff = actionReturn[1];
 
-                if (this.log) {
-                    this.stateChangeLogs.push({
-                        oldValue,
-                        newValue: updateInfo[0],
-                        diff: updateInfo[1],
-                        id: actionId
-                    });
-                }
+            if (this.log) {
+                this.stateChangeLogs.push({
+                    oldValue,
+                    newValue: this.raw,
+                    diff,
+                    id: actionId
+                });
             }
         }
         this.actionCtrl.done(actionId);
 
-        if (updateInfo) {
-            this._fire(updateInfo[1]);
+        if (diff) {
+            this._fire(diff);
         }
     }
 }
@@ -239,20 +228,21 @@ class ActionControl {
      *
      * @param {string} id action的id
      * @param {string} name action 名称
+     * @param {Function} action action 函数
      * @param {*} payload payload
      * @param {string?} parentId 父action的id
      */
-    start(id, name, payload, parentId) {
+    start(id, name, action, payload, parentId) {
         let actionInfo = {
             id,
             name,
             parentId,
+            payload,
             childs: []
         };
 
         if (this.store.log) {
             actionInfo.startTime = (new Date()).getTime();
-            actionInfo.payload = payload;
         }
 
         this.list[this.len] = actionInfo;
@@ -260,6 +250,33 @@ class ActionControl {
 
         if (parentId) {
             this.getById(parentId).childs.push(id);
+        }
+
+        emitDevtool('store-dispatch', {
+            store: this.store,
+            name,
+            payload,
+            actionId: id,
+            parentId
+        });
+
+        let returnValue = action.call(this, payload, {
+            getState: name => this.store.getState(name),
+            dispatch: (name, payload) => this.store._dispatch(name, payload, id)
+        });
+
+        actionInfo.actionReturn = returnValue;
+
+        if (typeof returnValue.buildWithDiff === 'function') {
+            let updateInfo = returnValue.buildWithDiff()(this.store.raw);
+            updateInfo[1] = flattenDiff(updateInfo[1]);
+
+            actionInfo.updateInfo = updateInfo;
+            return updateInfo;
+        }
+        
+        if (typeof returnValue.then === 'function') {
+            return returnValue;
         }
     }
 
@@ -291,10 +308,16 @@ class ActionControl {
             if (this.store.log) {
                 actionInfo.endTime = (new Date()).getTime()
             }
-            emitDevtool('store-dispatch-done', {
+
+            emitDevtool('store-dispatched', {
                 store: this.store,
-                actionInfo
+                diff: actionInfo.updateInfo ? actionInfo.updateInfo[1] : null,
+                name: actionInfo.name,
+                payload: actionInfo.payload,
+                actionId: actionInfo.id,
+                parentId: actionInfo.parentId
             });
+
             if (actionInfo.parentId) {
                 this.detectDone(actionInfo.parentId);
             }
