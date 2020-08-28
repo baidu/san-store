@@ -266,19 +266,21 @@ class ActionControl {
             dispatch: (name, payload) => this.store._dispatch(name, payload, id)
         });
 
-        if (typeof returnValue.buildWithDiff === 'function') {
-            let updateInfo = returnValue.buildWithDiff()(this.store.raw);
-            updateInfo[1] = flattenDiff(updateInfo[1]);
+        if (returnValue != null) {
+            if (typeof returnValue.buildWithDiff === 'function') {
+                let updateInfo = returnValue.buildWithDiff()(this.store.raw);
+                updateInfo[1] = flattenDiff(updateInfo[1]);
 
-            if (this.store.log) {
-                actionInfo.updateInfo = updateInfo;
+                if (this.store.log) {
+                    actionInfo.updateInfo = updateInfo;
+                }
+
+                return updateInfo;
             }
-
-            return updateInfo;
-        }
-        
-        if (typeof returnValue.then === 'function') {
-            return returnValue;
+            
+            if (typeof returnValue.then === 'function') {
+                return returnValue;
+            }
         }
     }
 
