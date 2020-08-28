@@ -1,4 +1,11 @@
 
+2.0.3
+---------
+
+- [优化] 优化 action 流转的效率
+- [新特性] 增加 store-dispatch 的 emitDevtool 点，以便于开发工具对 action dispatch 过程的跟踪
+
+
 2.0.2
 ---------
 
