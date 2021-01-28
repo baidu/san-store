@@ -190,7 +190,7 @@ describe('Store', () => {
     });
 
     it('dispatch async action in action', done => {
-        let store = new Store({});
+        let store = new Store({log: true});
 
         expect(store.getState().list == null).toBeTruthy();
 
@@ -248,7 +248,7 @@ describe('Store', () => {
     });
 
     it('dispatch async action in action, return Promise', done => {
-        let store = new Store({});
+        let store = new Store({log: true});
 
         expect(store.getState().list == null).toBeTruthy();
 
@@ -306,7 +306,7 @@ describe('Store', () => {
     });
 
     it('children action not done, action shouldnot be mark done', done => {
-        let store = new Store({});
+        let store = new Store({log: true});
 
         expect(store.getState().list == null).toBeTruthy();
 
@@ -389,7 +389,7 @@ describe('Store', () => {
     });
 
     it('children action not done, promise should not resolved', done => {
-        let store = new Store({});
+        let store = new Store({log: true});
 
         expect(store.getState().list == null).toBeTruthy();
 

@@ -245,7 +245,6 @@ class ActionControl {
             actionInfo.payload = payload;
         }
 
-        // TODO: clean?
         this.list[this.len] = actionInfo;
         this.index[id] = this.len++;
 
@@ -329,6 +328,24 @@ class ActionControl {
 
         if (actionInfo.parentId) {
             this.detectDone(actionInfo.parentId);
+        }
+        else if (!this.store.log) {
+            this.freeActionInfo(id);
+        }
+    }
+
+    freeActionInfo(id) {
+        let actionInfo = this.getById(id);
+
+        if (actionInfo) {
+            let len = actionInfo.childs.length;
+            while (len--) {
+                this.freeActionInfo(actionInfo.childs[len]);
+            }
+
+
+            this.list[this.index[id]] = null;
+            this.index[id] = -1;
         }
     }
 
