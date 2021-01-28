@@ -46,7 +46,7 @@ export default class Store {
         {
             initData = {},
             actions = {},
-            log = true,
+            log = false,
             name
         } = {}
     ) {
@@ -173,7 +173,7 @@ export default class Store {
         }
 
         let actionReturn = this.actionCtrl.start(actionId, name, action, payload, parentId);
-        
+
 
         let diff;
         if (actionReturn) {
@@ -277,7 +277,7 @@ class ActionControl {
 
                 return updateInfo;
             }
-            
+
             if (typeof returnValue.then === 'function') {
                 return returnValue;
             }
@@ -306,7 +306,7 @@ class ActionControl {
         if (!actionInfo.selfDone) {
             return;
         }
-        
+
         for (var i = 0; i < actionInfo.childs.length; i++) {
             if (!this.getById(actionInfo.childs[i]).done) {
                 return;
