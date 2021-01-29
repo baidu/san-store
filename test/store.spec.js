@@ -238,7 +238,7 @@ describe('Store', () => {
         function getActionInfo() {
             let actionInfo;
 
-            store.actionCtrl.list.forEach(item => {
+            store.actionInfos.forEach(item => {
                 if (item.name === 'fetchList') {
                     actionInfo = item;
                 }
@@ -296,7 +296,7 @@ describe('Store', () => {
         function getActionInfo() {
             let actionInfo;
 
-            store.actionCtrl.list.forEach(item => {
+            store.actionInfos.forEach(item => {
                 if (item.name === 'fetchList') {
                     actionInfo = item;
                 }
@@ -379,7 +379,7 @@ describe('Store', () => {
         function getActionInfo() {
             let actionInfo;
 
-            store.actionCtrl.list.forEach(item => {
+            store.actionInfos.forEach(item => {
                 if (item.name === 'fetchList') {
                     actionInfo = item;
                 }
@@ -476,7 +476,7 @@ describe('Store', () => {
         function getActionInfo() {
             let actionInfo;
 
-            store.actionCtrl.list.forEach(item => {
+            store.actionInfos.forEach(item => {
                 if (item.name === 'fetchList') {
                     actionInfo = item;
                 }

@@ -56,8 +56,11 @@ export default class Store {
         this.name = name;
 
         this.listeners = [];
+
         this.stateChangeLogs = [];
-        this.actionCtrl = new ActionControl(this);
+        this.actionInfos = [];
+        this.actionInfoIndex = {};
+        this.aiLen = 0;
     }
 
     /**
@@ -172,14 +175,14 @@ export default class Store {
             return;
         }
 
-        let actionReturn = this.actionCtrl.start(actionId, name, action, payload, parentId);
+        let actionReturn = this._actionStart(actionId, name, action, payload, parentId);
 
 
         let diff;
         if (actionReturn) {
             if (typeof actionReturn.then === 'function') {
                 return actionReturn.then(returns => {
-                    this.actionCtrl.done(actionId);
+                    this._actionDone(actionId);
                     return returns;
                 });
             }
@@ -197,30 +200,16 @@ export default class Store {
                 });
             }
         }
-        this.actionCtrl.done(actionId);
+
+        this._actionDone(actionId);
 
         if (diff) {
             this._fire(diff);
         }
     }
-}
 
-/**
- * Action 控制类，用于 Store 控制 Action 运行过程
- *
- * @class
- */
-class ActionControl {
-    /**
-     * 构造函数
-     *
-     * @param {Store} store 所属的store实例
-     */
-    constructor(store) {
-        this.list = [];
-        this.len = 0;
-        this.index = {};
-        this.store = store;
+    _getActionInfo(id) {
+        return this.actionInfos[this.actionInfoIndex[id]];
     }
 
     /**
@@ -232,7 +221,7 @@ class ActionControl {
      * @param {*} payload payload
      * @param {string?} parentId 父action的id
      */
-    start(id, name, action, payload, parentId) {
+    _actionStart(id, name, action, payload, parentId) {
         let actionInfo = {
             id,
             name,
@@ -240,20 +229,20 @@ class ActionControl {
             childs: []
         };
 
-        if (this.store.log) {
+        if (this.log) {
             actionInfo.startTime = (new Date()).getTime();
             actionInfo.payload = payload;
         }
 
-        this.list[this.len] = actionInfo;
-        this.index[id] = this.len++;
+        this.actionInfos[this.aiLen] = actionInfo;
+        this.actionInfoIndex[id] = this.aiLen++;
 
         if (parentId) {
-            this.getById(parentId).childs.push(id);
+            this._getActionInfo(parentId).childs.push(id);
         }
 
-        this.store.log && emitDevtool('store-dispatch', {
-            store: this.store,
+        this.log && emitDevtool('store-dispatch', {
+            store: this,
             name,
             payload,
             actionId: id,
@@ -261,16 +250,16 @@ class ActionControl {
         });
 
         let returnValue = action.call(this, payload, {
-            getState: name => this.store.getState(name),
-            dispatch: (name, payload) => this.store._dispatch(name, payload, id)
+            getState: name => this.getState(name),
+            dispatch: (name, payload) => this._dispatch(name, payload, id)
         });
 
         if (returnValue != null) {
             if (typeof returnValue.buildWithDiff === 'function') {
-                let updateInfo = returnValue.buildWithDiff()(this.store.raw);
+                let updateInfo = returnValue.buildWithDiff()(this.raw);
                 updateInfo[1] = flattenDiff(updateInfo[1]);
 
-                if (this.store.log) {
+                if (this.log) {
                     actionInfo.updateInfo = updateInfo;
                 }
 
@@ -289,9 +278,9 @@ class ActionControl {
      * @param {string} id action的id
      * @param {Function?} updateBuilder 状态更新函数生成器
      */
-    done(id) {
-        this.getById(id).selfDone = true;
-        this.detectDone(id);
+    _actionDone(id) {
+        this._getActionInfo(id).selfDone = true;
+        this._detectActionDone(id);
     }
 
     /**
@@ -299,25 +288,25 @@ class ActionControl {
      *
      * @param {string} id action的id
      */
-    detectDone(id) {
-        let actionInfo = this.getById(id);
+    _detectActionDone(id) {
+        let actionInfo = this._getActionInfo(id);
 
         if (!actionInfo.selfDone) {
             return;
         }
 
         for (var i = 0; i < actionInfo.childs.length; i++) {
-            if (!this.getById(actionInfo.childs[i]).done) {
+            if (!this._getActionInfo(actionInfo.childs[i]).done) {
                 return;
             }
         }
 
         actionInfo.done = true;
 
-        if (this.store.log) {
+        if (this.log) {
             actionInfo.endTime = (new Date()).getTime();
             emitDevtool('store-dispatched', {
-                store: this.store,
+                store: this,
                 diff: actionInfo.updateInfo ? actionInfo.updateInfo[1] : null,
                 name: actionInfo.name,
                 payload: actionInfo.payload,
@@ -327,31 +316,28 @@ class ActionControl {
         }
 
         if (actionInfo.parentId) {
-            this.detectDone(actionInfo.parentId);
+            this._detectActionDone(actionInfo.parentId);
         }
-        else if (!this.store.log) {
-            this.freeActionInfo(id);
+        else if (!this.log) {
+            this._freeActionInfo(id);
         }
     }
 
-    freeActionInfo(id) {
-        let actionInfo = this.getById(id);
+    _freeActionInfo(id) {
+        let actionInfo = this._getActionInfo(id);
 
         if (actionInfo) {
             let len = actionInfo.childs.length;
             while (len--) {
-                this.freeActionInfo(actionInfo.childs[len]);
+                this._freeActionInfo(actionInfo.childs[len]);
             }
 
 
-            this.list[this.index[id]] = null;
-            this.index[id] = -1;
+            this.actionInfos[this.actionInfoIndex[id]] = null;
+            this.actionInfoIndex[id] = -1;
         }
     }
-
-    getById(id) {
-        return this.list[this.index[id]]
-    }
 }
+
 
 
