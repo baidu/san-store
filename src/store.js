@@ -61,6 +61,10 @@ export default class Store {
         this.actionInfos = [];
         this.actionInfoIndex = {};
         this.aiLen = 0;
+
+        this.stateGetter = function (name) {
+            return this.getState(name);
+        };
     }
 
     /**
@@ -250,7 +254,7 @@ export default class Store {
         });
 
         let returnValue = action.call(this, payload, {
-            getState: name => this.getState(name),
+            getState: this.stateGetter,
             dispatch: (name, payload) => this._dispatch(name, payload, id)
         });
 
