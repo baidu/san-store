@@ -62,9 +62,7 @@ export default class Store {
         this.actionInfoIndex = {};
         this.aiLen = 0;
 
-        this.stateGetter = function (name) {
-            return this.getState(name);
-        };
+        this.stateGetter = name => this.getState(name);
     }
 
     /**
@@ -328,17 +326,17 @@ export default class Store {
     }
 
     _freeActionInfo(id) {
-        let actionInfo = this._getActionInfo(id);
-
-        if (actionInfo) {
-            let len = actionInfo.childs.length;
+        var len = this.actionInfos.length;
+        if (len && this._getActionInfo(id)) {
             while (len--) {
-                this._freeActionInfo(actionInfo.childs[len]);
+                if (!this.actionInfos[len].done) {
+                    return;
+                }
             }
 
-
-            this.actionInfos[this.actionInfoIndex[id]] = null;
-            this.actionInfoIndex[id] = -1;
+            this.actionInfos = [];
+            this.aiLen = 0;
+            delete this.actionInfoIndex[id];
         }
     }
 }
