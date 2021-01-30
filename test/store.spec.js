@@ -123,6 +123,41 @@ describe('Store', () => {
         expect(store.getState().name).toBe('erik');
     });
 
+    it('log config is false, actionInfos should be free', () => {
+        let store = new Store({
+            initData: {
+                name: 'errorrik',
+                emails: ['errorrik@gmail.com']
+            }
+        });
+
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+
+        store.addAction('changeName', name => updateBuilder().set('name', name));
+        store.dispatch('changeName', 'erik');
+        expect(store.getState().name).toBe('erik');
+        expect(store.actionInfos.length === 0).toBeTruthy();
+    });
+
+    it('log config is true, actionInfos shouldnot be free', () => {
+        let store = new Store({
+            log: true,
+            initData: {
+                name: 'errorrik',
+                emails: ['errorrik@gmail.com']
+            }
+        });
+
+        expect(store.getState().name).toBe('errorrik');
+        expect(store.getState().emails[0]).toBe('errorrik@gmail.com');
+
+        store.addAction('changeName', name => updateBuilder().set('name', name));
+        store.dispatch('changeName', 'erik');
+        expect(store.getState().name).toBe('erik');
+        expect(store.actionInfos.length > 0).toBeTruthy();
+    });
+
 
     it('update depend on current state', () => {
         let store = new Store({
