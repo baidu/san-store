@@ -321,13 +321,8 @@ export default class Store {
             this._detectActionDone(actionInfo.parentId);
         }
         else if (!this.log) {
-            this._freeActionInfo(id);
-        }
-    }
-
-    _freeActionInfo(id) {
-        var len = this.actionInfos.length;
-        if (len && this._getActionInfo(id)) {
+            // free actionInfos
+            var len = this.actionInfos.length;
             while (len--) {
                 if (!this.actionInfos[len].done) {
                     return;
