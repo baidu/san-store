@@ -9,7 +9,7 @@
 
 import flattenDiff from './flatten-diff';
 import parseName from './parse-name';
-import emitDevtool from './devtool/emitter';
+import emitDevtool, {hasSanDevtool} from './devtool/emitter';
 
 /**
  * 唯一id的起始值
@@ -52,7 +52,7 @@ export default class Store {
     ) {
         this.raw = initData;
         this.actions = actions;
-        this.log = log;
+        this.log = hasSanDevtool || log;
         this.name = name;
 
         this.listeners = [];

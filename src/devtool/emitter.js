@@ -8,8 +8,12 @@
 
 let isBrowser = typeof window !== 'undefined';
 
- export default function emitDevtool(name, args) {
-   if (isBrowser && window['__san_devtool__']) {
+const hasSanDevtool = !!(isBrowser && window['__san_devtool__']);
+
+export {hasSanDevtool};
+
+export default function emitDevtool(name, args) {
+   if (hasSanDevtool) {
        window['__san_devtool__'].emit(name, args);
    }
 }
