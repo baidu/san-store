@@ -40,15 +40,9 @@ function extendsComponent(ComponentClass) {
         NewComponentClass = extendsAsFunc(ComponentClass);
     }
 
-    NewComponentClass.template = ComponentClass.template;
-    NewComponentClass.components = ComponentClass.components;
-    NewComponentClass.trimWhitespace = ComponentClass.trimWhitespace;
-    NewComponentClass.delimiters = ComponentClass.delimiters;
-    NewComponentClass.autoFillStyleAndId = ComponentClass.autoFillStyleAndId;
-    NewComponentClass.filters = ComponentClass.filters;
-    NewComponentClass.computed = ComponentClass.computed;
-    NewComponentClass.messages = ComponentClass.messages;
-
+    for (var key in ComponentClass) {
+        NewComponentClass[key] = ComponentClass[key];
+    }
     return NewComponentClass;
 }
 

@@ -184,6 +184,8 @@ describe('Connect san component', () => {
 
         }
         RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
+        RawComponent.hello = 'erik';
+        RawComponent.sayHello = function () {};
 
         let MyComponent = connect.san({
             name: 'name',
@@ -201,6 +203,9 @@ describe('Connect san component', () => {
         let u = wrap.getElementsByTagName('u')[0];
         expect(myComponent.data.get('name')).toBe('errorrik');
         expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        expect(MyComponent.hello).not.toBeUndefined();
+        expect(MyComponent.sayHello).not.toBeUndefined();
 
         myComponent.dispose();
         document.body.removeChild(wrap);
@@ -224,6 +229,8 @@ describe('Connect san component', () => {
         }(san.Component);
         
         RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
+        RawComponent.hello = 'erik';
+        RawComponent.sayHello = function () {};
 
         let MyComponent = connect.san({
             name: 'name',
@@ -241,6 +248,9 @@ describe('Connect san component', () => {
         let u = wrap.getElementsByTagName('u')[0];
         expect(myComponent.data.get('name')).toBe('errorrik');
         expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        expect(MyComponent.hello).not.toBeUndefined();
+        expect(MyComponent.sayHello).not.toBeUndefined();
 
         myComponent.dispose();
         document.body.removeChild(wrap);
@@ -303,6 +313,8 @@ describe('Connect san component', () => {
         let RawComponent = san.defineComponent({
         });
         RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
+        RawComponent.hello = 'erik';
+        RawComponent.sayHello = function () {};
 
         let MyComponent = connect.san({
             name: 'name',
@@ -319,6 +331,9 @@ describe('Connect san component', () => {
 
         let u = wrap.getElementsByTagName('u')[0];
         expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        expect(MyComponent.hello).not.toBeUndefined();
+        expect(MyComponent.sayHello).not.toBeUndefined();
 
         myComponent.dispose();
         document.body.removeChild(wrap);

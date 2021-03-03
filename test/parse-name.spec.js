@@ -1,4 +1,3 @@
-
 import parseName from '../src/parse-name';
 
 describe('parseName', () => {
@@ -20,8 +19,8 @@ describe('parseName', () => {
         let result = parseName('t1.t2[0]["t4"].t3')
         expect(result.length).toBe(5);
         expect(result[0]).toBe('t1');
-        expect(result[2]).toBe(0);
         expect(result[1]).toBe('t2');
+        expect(result[2]).toBe(0);
         expect(result[3]).toBe('t4');
         expect(result[4]).toBe('t3');
     });
