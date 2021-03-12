@@ -520,5 +520,27 @@ describe('Store', () => {
         }
     });
 
+    it('async child action should run successfully', done => {
+        let store = new Store({
+            initData: {
+                name: 'errorrik',
+                emails: ['errorrik@gmail.com']
+            }
+        });
 
+        store.addAction('changeName', function (name, {dispatch}) {
+            setTimeout(() => {
+                dispatch('setName', name);
+                expect(store.getState().name).toBe(name);
+                done();
+            }, 200);
+            updateBuilder().set('name', 'hello');
+        });
+
+        store.addAction('setName', function (name) {
+            return updateBuilder().set('name', name);
+        });
+
+        store.dispatch('changeName', 'erik');
+    });
 });

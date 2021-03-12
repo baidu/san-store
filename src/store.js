@@ -211,7 +211,7 @@ export default class Store {
     }
 
     _getActionInfo(id) {
-        return this.actionInfos[this.actionInfoIndex[id]];
+        return this.actionInfos[this.actionInfoIndex[id] || 0];
     }
 
     /**
