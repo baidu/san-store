@@ -17,7 +17,7 @@ import emitDevtool from './devtool/emitter';
  * @inner
  * @type {number}
  */
-let guidIndex = 1;
+let guidIndex = 0;
 
 /**
  * 获取唯一id
@@ -211,7 +211,11 @@ export default class Store {
     }
 
     _getActionInfo(id) {
-        return this.actionInfos[this.actionInfoIndex[id] || 0];
+        let index = this.actionInfoIndex[id];
+
+        if (index != null) {
+            return this.actionInfos[index];
+        }
     }
 
     /**
@@ -240,7 +244,8 @@ export default class Store {
         this.actionInfoIndex[id] = this.aiLen++;
 
         if (parentId) {
-            this._getActionInfo(parentId).childs.push(id);
+            let parentActionInfo = this._getActionInfo(parentId);
+            parentActionInfo && parentActionInfo.childs.push(id);
         }
 
         this.log && emitDevtool('store-dispatch', {
@@ -291,15 +296,22 @@ export default class Store {
      * @param {string} id action的id
      */
     _detectActionDone(id) {
+        if (!id) {
+            return;
+        }
+
         let actionInfo = this._getActionInfo(id);
+        if (!actionInfo) {
+            return;
+        }
 
         if (!actionInfo.selfDone) {
-            return;
+            return false;
         }
 
         for (var i = 0; i < actionInfo.childs.length; i++) {
             if (!this._getActionInfo(actionInfo.childs[i]).done) {
-                return;
+                return false;
             }
         }
 
@@ -317,11 +329,8 @@ export default class Store {
             });
         }
 
-        if (actionInfo.parentId) {
-            this._detectActionDone(actionInfo.parentId);
-        }
-        else if (!this.log) {
-            // free actionInfos
+        // free actionInfos
+        if (this._detectActionDone(actionInfo.parentId) == null && !this.log) {
             var len = this.actionInfos.length;
             while (len--) {
                 if (!this.actionInfos[len].done) {
@@ -333,6 +342,8 @@ export default class Store {
             this.aiLen = 0;
             delete this.actionInfoIndex[id];
         }
+
+        return true;
     }
 }
 
