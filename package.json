@@ -1,6 +1,6 @@
 {
   "name": "san-store",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Application State Management for San",
   "scripts": {
     "build": "rm -rf dist && rollup --config && uglifyjs dist/san-store.source.js -mco dist/san-store.js",
@@ -20,7 +20,7 @@
     "karma-webpack": "^2.0.1",
     "rollup": "^1.27.14",
     "rollup-plugin-babel": "^4.3.3",
-    "san": "^3.8.0",
+    "san": "^3.10.3",
     "san-update": "2.0.0",
     "uglify-js": "^2.7.5",
     "webpack": "^4.41.4",
