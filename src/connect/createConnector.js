@@ -48,7 +48,6 @@ function extendsComponent(ComponentClass) {
     NewComponentClass.filters = ComponentClass.filters;
     NewComponentClass.computed = ComponentClass.computed;
     NewComponentClass.aPack = ComponentClass.aPack;
-    NewComponentClass.aNode = ComponentClass.aNode;
     NewComponentClass.messages = ComponentClass.messages;
 
     return NewComponentClass;
