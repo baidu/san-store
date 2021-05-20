@@ -179,6 +179,51 @@ describe('Connect san component', () => {
         document.body.removeChild(wrap);
     });
 
+    it('which has aPack prop', () => {
+        let MyComponent = connect.san({
+            name: 'name',
+            email: 'emails[0]'
+        })(
+            san.defineComponent({
+                aPack: [1, "u", 5, 2, "title", 9, , 3, 7, , 6, 1, 3, "name", , 3, "-", 7, , 6, 1, 3, "email", , 2, "class", 7, , 6, 1, 3, "class", 1, 8, 6, 1, 3, "_class", , 2, "style", 7, , 6, 1, 3, "style", 1, 8, 6, 1, 3, "_style", , 2, "id", 6, 1, 3, "id", , 9, , 3, 7, , 6, 1, 3, "name", , 3, "-", 7, , 6, 1, 3, "email",]
+            })
+        );
+
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+        expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        myComponent.dispose();
+        document.body.removeChild(wrap);
+    });
+
+    it('which has aPack static prop', () => {
+        let MyCmpt = san.defineComponent({});
+        MyCmpt.aPack = [1, "u", 5, 2, "title", 9, , 3, 7, , 6, 1, 3, "name", , 3, "-", 7, , 6, 1, 3, "email", , 2, "class", 7, , 6, 1, 3, "class", 1, 8, 6, 1, 3, "_class", , 2, "style", 7, , 6, 1, 3, "style", 1, 8, 6, 1, 3, "_style", , 2, "id", 6, 1, 3, "id", , 9, , 3, 7, , 6, 1, 3, "name", , 3, "-", 7, , 6, 1, 3, "email",]
+
+        let MyComponent = connect.san({
+            name: 'name',
+            email: 'emails[0]'
+        })(MyCmpt);
+
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+        expect(u.title).toBe('errorrik-errorrik@gmail.com');
+
+        myComponent.dispose();
+        document.body.removeChild(wrap);
+    });
+
     it('data should be ready when component init, component declare as class', () => {
         class RawComponent extends san.Component {
 
@@ -208,7 +253,7 @@ describe('Connect san component', () => {
 
 
     it('data should be ready when component init, component declare as class and trans by babel', () => {
-        
+
         var RawComponent = /*#__PURE__*/function (_san$Component) {
             _inherits(RawComponent, _san$Component);
 
@@ -222,7 +267,7 @@ describe('Connect san component', () => {
 
             return RawComponent;
         }(san.Component);
-        
+
         RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
 
         let MyComponent = connect.san({
@@ -247,35 +292,35 @@ describe('Connect san component', () => {
     });
 
     it('data should be ready when component init, component declare as class and trans by babel, extends more than once', () => {
-        
+
         var BaseComponent = /*#__PURE__*/function (_san$Component) {
             _inherits(BaseComponent, _san$Component);
-          
+
             var _super = _createSuper(BaseComponent);
-          
+
             function BaseComponent() {
               _classCallCheck(this, BaseComponent);
-          
+
               return _super.apply(this, arguments);
             }
-          
+
             return BaseComponent;
           }(san.Component);
-          
+
           var RawComponent = /*#__PURE__*/function (_BaseComponent) {
             _inherits(RawComponent, _BaseComponent);
-          
+
             var _super2 = _createSuper(RawComponent);
-          
+
             function RawComponent() {
               _classCallCheck(this, RawComponent);
-          
+
               return _super2.apply(this, arguments);
             }
-          
+
             return RawComponent;
           }(BaseComponent);
-        
+
         RawComponent.template =  '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>';
 
         let MyComponent = connect.san({
@@ -718,7 +763,7 @@ describe('Connect san component', () => {
 
         expect(MyComponent === RawComponent).toBeFalsy();
 
-        
+
         let wrap = document.createElement('div');
         document.body.appendChild(wrap);
 
