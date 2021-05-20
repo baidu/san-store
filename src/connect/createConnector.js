@@ -28,6 +28,10 @@ function extendsAsFunc(RawClass) {
     NewClass.prototype = new F();
     NewClass.prototype.constructor = NewClass;
 
+    if (F.prototype.hasOwnProperty('aPack')) {
+        NewClass.prototype.aPack = F.prototype.aPack;
+    }
+
     return NewClass;
 }
 
