@@ -126,9 +126,9 @@ export default class Store {
      * @param {Array} diff 数据变更信息对象
      */
     _fire(diff) {
-        this.listeners.forEach(listener => {
-            listener.call(this, diff);
-        });
+        for (let i = 0, l = this.listeners.length; i < l; i++) {
+            this.listeners[i].call(this, diff);
+        }
     }
 
     /**

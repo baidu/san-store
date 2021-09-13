@@ -69,6 +69,7 @@ function extendsComponent(ComponentClass) {
  */
 function connect(mapStates, mapActions, store) {
     let mapStateInfo = [];
+    let mapStateCount = 0;
 
     for (let key in mapStates) {
         if (mapStates.hasOwnProperty(key)) {
@@ -89,7 +90,10 @@ function connect(mapStates, mapActions, store) {
                     break;
             }
 
-            mapInfo && mapStateInfo.push(mapInfo);
+            if (mapInfo) {
+                mapStateInfo.push(mapInfo);
+                mapStateCount++;
+            }
         }
     }
 
@@ -119,35 +123,44 @@ function connect(mapStates, mapActions, store) {
         let disposed = componentProto.disposed;
 
         extProto.inited = function () {
-
             // init data
-            mapStateInfo.forEach(info => {
-                if (typeof info.getter === 'function') {
-                    this.data.set(info.dataName, info.getter(store.getState(), this));
+            for (let i = 0; i < mapStateCount; i++) {
+                let stateInfo = mapStateInfo[i];
+
+                if (typeof stateInfo.getter === 'function') {
+                    this.data.set(
+                        stateInfo.dataName, 
+                        stateInfo.getter(store.getState(), this)
+                    );
                 }
                 else {
-                    this.data.set(info.dataName, store.getState(info.stateName));
+                    this.data.set(stateInfo.dataName, store.getState(stateInfo.stateName));
                 }
-            });
+            }
 
             // listen store change
             this.__storeListener = diff => {
-                mapStateInfo.forEach(info => {
-                    if (typeof info.getter === 'function') {
-                        this.data.set(info.dataName, info.getter(store.getState(), this));
-                        return;
+                for (let i = 0; i < mapStateCount; i++) {
+                    let stateInfo = mapStateInfo[i];
+    
+                    if (typeof stateInfo.getter === 'function') {
+                        this.data.set(
+                            stateInfo.dataName, 
+                            stateInfo.getter(store.getState(), this)
+                        );
                     }
-
-                    let updateInfo = calcUpdateInfo(info, diff);
-                    if (updateInfo) {
-                        if (updateInfo.spliceArgs) {
-                            this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
-                        }
-                        else {
-                            this.data.set(updateInfo.componentData, store.getState(updateInfo.storeData));
+                    else {
+                        let updateInfo = calcUpdateInfo(stateInfo, diff);
+                        if (updateInfo) {
+                            if (updateInfo.spliceArgs) {
+                                this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
+                            }
+                            else {
+                                this.data.set(updateInfo.componentData, store.getState(updateInfo.storeData));
+                            }
                         }
                     }
-                });
+                }
             };
             store.listen(this.__storeListener);
 
