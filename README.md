@@ -17,6 +17,7 @@
 - [单Store与多Store](#单store与多store) 
 - [Action](#action) 
 - [组件的connect](#组件的connect) 
+- [API](https://github.com/baidu/san-store/blob/master/doc/api.md)
 
 
 下载
