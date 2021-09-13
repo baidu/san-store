@@ -123,7 +123,7 @@ function connect(mapStates, mapActions, store) {
             // init data
             mapStateInfo.forEach(info => {
                 if (typeof info.getter === 'function') {
-                    this.data.set(info.dataName, info.getter(store.getState()));
+                    this.data.set(info.dataName, info.getter(store.getState(), this));
                 }
                 else {
                     this.data.set(info.dataName, store.getState(info.stateName));
@@ -134,7 +134,7 @@ function connect(mapStates, mapActions, store) {
             this.__storeListener = diff => {
                 mapStateInfo.forEach(info => {
                     if (typeof info.getter === 'function') {
-                        this.data.set(info.dataName, info.getter(store.getState()));
+                        this.data.set(info.dataName, info.getter(store.getState(), this));
                         return;
                     }
 
