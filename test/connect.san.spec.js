@@ -794,4 +794,54 @@ describe('Connect san component', () => {
             done();
         });
     });
+
+    it('connected component should be independent', done => {
+        store.addAction('for-connect-10', payload => {
+            let builder = updateBuilder()
+                .set('name', payload.name)
+                .set('emails[0]', payload.email);
+
+            return builder;
+        });
+
+        let RawComponent = san.defineComponent({
+            template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>',
+
+            initData() {
+                return {
+                    name: 'efe',
+                    email: 'ecomfe@gmail.com'
+                }
+            }
+        });
+
+        let MyComponent = connect.san({
+            name: states => states.name,
+            email: states => states.emails[0]
+        })(RawComponent);
+
+        expect(MyComponent === RawComponent).toBeFalsy();
+
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        expect(myComponent.el.title).toBe('errorrik-errorrik@gmail.com');
+
+        store.dispatch('for-connect-10', {
+            name: 'erik',
+            email: 'erik@gmail.com'
+        });
+
+        san.nextTick(() => {
+            expect(myComponent.el.title).toBe('erik-erik@gmail.com');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    });
 });
