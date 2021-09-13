@@ -736,7 +736,7 @@ describe('Connect san component', () => {
         });
     });
 
-    it('', done => {
+    it('connected component should be independent', done => {
         store.addAction('for-connect-9', payload => {
             let builder = updateBuilder()
                 .set('name', payload.name)
