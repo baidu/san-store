@@ -156,9 +156,10 @@ export default class Store {
      *
      * @param {string} name action名称
      * @param {*} payload payload
+     * @param {Function?} compt 调用此 action 的组件实例
      */
-    dispatch(name, payload) {
-        return this._dispatch(name, payload);
+    dispatch(name, payload, compt) {
+        return this._dispatch(name, payload, undefined, compt);
     }
 
     /**
@@ -167,9 +168,10 @@ export default class Store {
      * @private
      * @param {string} name action名称
      * @param {*} payload payload
-     * @param {string} parentId 所属父action的id
+     * @param {string?} parentId 所属父action的id
+     * @param {Function?} compt 调用此 action 的组件实例
      */
-    _dispatch(name, payload, parentId) {
+    _dispatch(name, payload, parentId, compt) {
         let action = this.actions[name];
         let actionId = guid();
 
@@ -177,8 +179,7 @@ export default class Store {
             return;
         }
 
-        let actionReturn = this._actionStart(actionId, name, action, payload, parentId);
-
+        let actionReturn = this._actionStart(actionId, name, action, payload, parentId, compt);
 
         let diff;
         if (actionReturn) {
@@ -226,8 +227,9 @@ export default class Store {
      * @param {Function} action action 函数
      * @param {*} payload payload
      * @param {string?} parentId 父action的id
+     * @param {Function?} compt 调用此 action 的组件实例
      */
-    _actionStart(id, name, action, payload, parentId) {
+    _actionStart(id, name, action, payload, parentId, compt) {
         let actionInfo = {
             id,
             name,
@@ -238,6 +240,7 @@ export default class Store {
         if (this.log) {
             actionInfo.startTime = (new Date()).getTime();
             actionInfo.payload = payload;
+            actionInfo.compt = compt;
         }
 
         this.actionInfos[this.aiLen] = actionInfo;
@@ -253,12 +256,13 @@ export default class Store {
             name,
             payload,
             actionId: id,
-            parentId
+            parentId,
+            compt,
         });
-
         let returnValue = action.call(this, payload, {
             getState: this.stateGetter,
-            dispatch: (name, payload) => this._dispatch(name, payload, id)
+            dispatch: (name, payload) => this._dispatch(name, payload, id, compt),
+            compt
         });
 
         if (returnValue != null) {

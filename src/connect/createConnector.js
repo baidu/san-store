@@ -129,7 +129,7 @@ function connect(mapStates, mapActions, store) {
 
                 if (typeof stateInfo.getter === 'function') {
                     this.data.set(
-                        stateInfo.dataName, 
+                        stateInfo.dataName,
                         stateInfo.getter(store.getState(), this)
                     );
                 }
@@ -142,10 +142,10 @@ function connect(mapStates, mapActions, store) {
             this.__storeListener = diff => {
                 for (let i = 0; i < mapStateCount; i++) {
                     let stateInfo = mapStateInfo[i];
-    
+
                     if (typeof stateInfo.getter === 'function') {
                         this.data.set(
-                            stateInfo.dataName, 
+                            stateInfo.dataName,
                             stateInfo.getter(store.getState(), this)
                         );
                     }
@@ -174,6 +174,28 @@ function connect(mapStates, mapActions, store) {
             if (typeof inited === 'function') {
                 inited.call(this);
             }
+
+            // map actions
+            if (!extProto.actions) {
+                const _this = this;
+                extProto.actions = {};
+
+                if (mapActions instanceof Array) {
+                    mapActions.forEach(actionName => {
+                        extProto.actions[actionName] = function (payload) {
+                            return store.dispatch(actionName, payload, _this);
+                        };
+                    });
+                }
+                else {
+                    for (let key in mapActions) {
+                        let actionName = mapActions[key];
+                        extProto.actions[key] = function (payload) {
+                            return store.dispatch(actionName, payload, _this);
+                        };
+                    }
+                }
+            }
         };
 
         extProto.disposed = function () {
@@ -191,27 +213,6 @@ function connect(mapStates, mapActions, store) {
                 disposed.call(this);
             }
         };
-
-        // map actions
-        if (!extProto.actions) {
-            extProto.actions = {};
-
-            if (mapActions instanceof Array) {
-                mapActions.forEach(actionName => {
-                    extProto.actions[actionName] = function (payload) {
-                        return store.dispatch(actionName, payload);
-                    };
-                });
-            }
-            else {
-                for (let key in mapActions) {
-                    let actionName = mapActions[key];
-                    extProto.actions[key] = function (payload) {
-                        return store.dispatch(actionName, payload);
-                    };
-                }
-            }
-        }
 
         return ReturnTarget;
     };

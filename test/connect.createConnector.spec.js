@@ -4,11 +4,11 @@ import {updateBuilder} from 'san-update';
 
 describe('Connect createConnector component', () => {
     const store = new Store();
-    store.addAction('reset-for-connect', () => {
+    store.addAction('reset-for-connect', (_, {compt}) => {
         let resetBuilder = updateBuilder()
             .set('name', 'errorrik')
             .set('emails', ['errorrik@gmail.com']);
-
+        expect(compt).toBe(undefined)
         return resetBuilder;
     });
 
@@ -120,11 +120,12 @@ describe('Connect createConnector component', () => {
     });
 
     it('dispatch action method should connect to component "actions" member, object mapActions', done => {
-        store.addAction('for-connect-3', payload => {
+        store.addAction('for-connect-3', (payload, {compt}) => {
             let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
-
+            expect(compt).not.toBe(undefined);
+            expect(compt.template).not.toBe(undefined);
             return builder;
         });
 
@@ -164,11 +165,12 @@ describe('Connect createConnector component', () => {
     });
 
     it('dispatch action method should connect to component "actions" member, array mapActions', done => {
-        store.addAction('for-connect-4', payload => {
+        store.addAction('for-connect-4', (payload, {compt}) => {
             let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
-
+            expect(compt).not.toBe(undefined);
+            expect(compt.template).not.toBe(undefined);
             return builder;
         });
 
@@ -213,8 +215,9 @@ describe('Connect createConnector component', () => {
     });
 
     it('components data should not infulence each other, and push item', done => {
-        store.addAction('for-connect-5', email => {
+        store.addAction('for-connect-5', (email, {compt}) => {
             let builder = updateBuilder().push('persons[0].emails', email);
+            expect(compt).toBe(undefined);
             return builder;
         });
 
