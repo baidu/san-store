@@ -10,6 +10,7 @@ import Store from './store';
 import createConnector, {createSanConnector} from './connect/createConnector';
 import emitDevtool from './devtool/emitter';
 
+export * from './connect/useHelpers';
 /**
  * 默认的全局 Store 实例
  * 通常我们认为在一个应用应该具有一个全局唯一的 store，管理整个应用状态

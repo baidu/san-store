@@ -8,5 +8,6 @@ export default {
         name: 'san-store'
     },
 
-	plugins: [babel()]
+	plugins: [babel()],
+    external: ['san-composition']
 };
