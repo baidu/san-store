@@ -7,7 +7,7 @@
  */
 
 import Store from './store';
-import createConnector from './connect/createConnector';
+import createConnector, {createSanConnector} from './connect/createConnector';
 import emitDevtool from './devtool/emitter';
 
 /**
@@ -35,3 +35,5 @@ export let connect = {
     san: createConnector(store),
     createConnector
 };
+
+export let sanConnector = createSanConnector();
