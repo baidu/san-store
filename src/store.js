@@ -205,7 +205,7 @@ export default class Store {
 
         this._actionDone(actionId);
 
-        if (diff) {
+        if (diff && diff.length > 0) {
             this._fire(diff);
         }
     }
@@ -346,6 +346,3 @@ export default class Store {
         return true;
     }
 }
-
-
-
