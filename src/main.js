@@ -7,10 +7,11 @@
  */
 
 import Store from './store';
-import createConnector, {createSanConnector} from './connect/createConnector';
+import createConnector from './connect/createConnector';
+import createSanConnector from './connect/createSanConnector';
 import emitDevtool from './devtool/emitter';
+import {createUseHelper} from './useHelpers';
 
-export * from './connect/useHelpers';
 /**
  * 默认的全局 Store 实例
  * 通常我们认为在一个应用应该具有一个全局唯一的 store，管理整个应用状态
@@ -37,4 +38,7 @@ export let connect = {
     createConnector
 };
 
-export let sanConnector = createSanConnector();
+export let sanConnector = createSanConnector(store);
+
+let {useState, useAction} = createUseHelper(store);
+export {useState, useAction};
