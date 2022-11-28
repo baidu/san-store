@@ -1,11 +1,11 @@
 const presets = [
-    [
-      "@babel/env",
+  [
+      '@babel/env',
       {
-        targets: {
-          ie: '8'
-        }
+          targets: {
+              ie: '8'
+          }
       }
-    ],
-  ];
-  module.exports = { presets };
+  ],
+];
+module.exports = {presets};

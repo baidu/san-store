@@ -8,7 +8,9 @@
 
 import Store from './store';
 import createConnector from './connect/createConnector';
+import createSanConnector from './connect/createSanConnector';
 import emitDevtool from './devtool/emitter';
+import {createUseHelper} from './useHelpers';
 
 /**
  * 默认的全局 Store 实例
@@ -35,3 +37,8 @@ export let connect = {
     san: createConnector(store),
     createConnector
 };
+
+export let sanConnector = createSanConnector(store);
+
+let {useState, useAction} = createUseHelper(store);
+export {useState, useAction};

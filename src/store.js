@@ -107,7 +107,7 @@ export default class Store {
     unlisten(listener) {
         let len = this.listeners.length;
         while (len--) {
-            if (this.listeners[len] === listener){
+            if (this.listeners[len] === listener) {
                 this.listeners.splice(len, 1);
             }
         }
@@ -205,7 +205,7 @@ export default class Store {
 
         this._actionDone(actionId);
 
-        if (diff) {
+        if (diff && diff.length > 0) {
             this._fire(diff);
         }
     }
@@ -309,7 +309,7 @@ export default class Store {
             return false;
         }
 
-        for (var i = 0; i < actionInfo.childs.length; i++) {
+        for (let i = 0; i < actionInfo.childs.length; i++) {
             if (!this._getActionInfo(actionInfo.childs[i]).done) {
                 return false;
             }
@@ -331,7 +331,7 @@ export default class Store {
 
         // free actionInfos
         if (this._detectActionDone(actionInfo.parentId) == null && !this.log) {
-            var len = this.actionInfos.length;
+            let len = this.actionInfos.length;
             while (len--) {
                 if (!this.actionInfos[len].done) {
                     return;
@@ -346,6 +346,3 @@ export default class Store {
         return true;
     }
 }
-
-
-
