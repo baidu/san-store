@@ -2,14 +2,13 @@
  * san-store
  * Copyright 2017 Baidu Inc. All rights reserved.
  *
- * @file san组件的connect
+ * @file san 组件的 connect
  * @author errorrik
  */
 
-import parseName from '../parse-name';
-import Store from '../store';
-import emitDevtool from '../devtool/emitter';
-import calcUpdateInfo from '../calc-update-info';
+import defaultStore from './default-store';
+import Store from './store';
+
 
 let extendsAsClass;
 
@@ -58,22 +57,50 @@ function extendsComponent(ComponentClass) {
     return NewComponentClass;
 }
 
-/**
- * san组件的connect
- *
- * @param {Object|Array} storeCollection store相关数据集合, 每一项{mapStates, mapActions, store}，含义如下:
- * {Object} mapStates 状态到组件数据的映射信息
- * {Object|Array?} mapActions store的action操作到组件actions方法的映射信息
- * {Store} store 指定的store实例
- * @return {function(ComponentClass)}
- */
-export function connect(storeCollection) {
-    if (!Array.isArray(storeCollection)) {
-        storeCollection = [storeCollection];
-    }
 
-    for (let i = 0; i < storeCollection.length; i++) {
-        const {mapStates, mapActions, store} = storeCollection[i];
+function connect(store, mapStates, mapActions) {
+    let connects = [];
+    function addConnect(store, mapStates, mapActions) {
+        if (!(store instanceof Store)) {
+            mapActions = mapStates;
+            mapStates = store;
+            store = defaultStore
+        }
+
+        let mapStateInfos = [];
+        let mapStateCount = 0;
+        let mapStateKeys = Object.keys(mapStates);
+        for (let i = 0; i < mapStateKeys.length; i++) {
+            let mapState = mapStates[mapStateKeys[i]];
+            let mapInfo = {dataName: key};
+
+            switch (typeof mapState) {
+                case 'string':
+                    mapInfo.stateName = parseName(mapState);
+                    break;
+
+                case 'function':
+                    mapInfo.getter = mapState;
+                    break;
+
+                default:
+                    mapInfo = null;
+                    break;
+            }
+
+            if (mapInfo) {
+                mapStateInfos.push(mapInfo);
+                mapStateCount++;
+            }
+        }
+
+        connects.push({
+            mapStates,
+            mapStateInfos,
+            mapStateCount,
+            mapActions,
+            store
+        });
         store.log && emitDevtool('store-connected', {
             mapStates,
             mapActions,
@@ -81,7 +108,10 @@ export function connect(storeCollection) {
         });
     }
 
-    return function (ComponentClass) {
+    addConnect(store, mapStates, mapActions);
+
+
+    function connectComponent(ComponentClass) {
         let componentProto;
         let ReturnTarget;
         let extProto;
@@ -103,33 +133,26 @@ export function connect(storeCollection) {
         extProto.inited = function () {
             this.__storeListeners = this.__storeListeners || [];
 
-            for (let i = 0; i < storeCollection.length; i++) {
-                const {mapStates, mapActions, store} = storeCollection[i];
-                const mapStatesKey = Object.keys(mapStates);
-                const mapStateInfo = [];
+            for (let i = 0; i < connects.length; i++) {
+                const {mapStates, mapStateCount, mapStateInfos, store} = connects[i];
                 // init data
-                for (let i = 0; i < mapStatesKey.length; i++) {
-                    const key = mapStatesKey[i];
-                    const stateName = mapStates[key];
-                    let stateInfo = {dataName: key};
+                for (let i = 0; i < mapStateCount; i++) {
+                    let stateInfo = mapStateInfos[i];
 
-                    if (typeof stateName === 'function') {
-                        stateInfo.getter = stateName;
+                    if (typeof stateInfo.getter === 'function') {
                         this.data.set(
-                            stateInfo.dataName,
+                            stateInfo.dataName, 
                             stateInfo.getter(store.getState(), this)
                         );
                     }
-                    else if (typeof stateName === 'string') {
-                        stateInfo.stateName = parseName(stateName);
+                    else {
                         this.data.set(stateInfo.dataName, store.getState(stateInfo.stateName));
                     }
-                    mapStateInfo.push(stateInfo);
                 }
 
                 // listen store change
                 let listener = diff => {
-                    for (let i = 0; i < mapStateInfo.length; i++) {
+                    for (let i = 0; i < mapStateCount; i++) {
                         let stateInfo = mapStateInfo[i];
 
                         if (typeof stateInfo.getter === 'function') {
@@ -169,8 +192,8 @@ export function connect(storeCollection) {
         };
 
         extProto.disposed = function () {
-            for (let i = 0; i < storeCollection.length; i++) {
-                const {mapStates, mapActions, store} = storeCollection[i];
+            for (let i = 0; i < connects.length; i++) {
+                const {mapStates, mapActions, store} = connects[i];
                 store.unlisten(this.__storeListeners[i]);
 
                 store.log && emitDevtool('store-comp-disposed', {
@@ -192,35 +215,50 @@ export function connect(storeCollection) {
         if (!extProto.actions) {
             extProto.actions = {};
 
-            for (let i = 0; i < storeCollection.length; i++) {
-                const {mapActions, store} = storeCollection[i];
-                const actions = mapActions instanceof Array
-                    ? mapActions
-                    : Object.keys(mapActions);
-
-                for (let i = 0; i < actions.length; i++) {
-                    const actionName = actions[i];
-                    extProto.actions[actionName] = function (payload) {
-                        return store.dispatch(actionName, payload);
-                    };
+            for (let i = 0; i < connects.length; i++) {
+                const {mapActions, store} = connects[i];
+                if (mapActions instanceof Array) {
+                    for (let i = 0; i < mapActions.length; i++) {
+                        let actionName = mapActions[i];
+                        extProto.actions[actionName] = function (payload) {
+                            return store.dispatch(actionName, payload);
+                        };
+                    }
+                }
+                else {
+                    const actions = Object.keys(mapActions);
+                    for (let i = 0; i < actions.length; i++) {
+                        let methodName = actions[i];
+                        let actionName = mapActions[methodName];
+                        extProto.actions[methodName] = function (payload) {
+                            return store.dispatch(actionName, payload);
+                        };
+                    }
                 }
             }
         }
 
         return ReturnTarget;
-    };
-}
-
-/**
- * createConnector 创建连接
- *
- * @param {Store} store store实例
- * @return {Function}
- */
-export default function createConnector(defaultStore) {
-    if (defaultStore instanceof Store) {
-        return (mapStates, mapActions, store = defaultStore) => connect({mapStates, mapActions, store});
     }
 
-    throw new Error(defaultStore + ' must be an instance of Store!');
+    connectComponent.connect = function (store, mapStates, mapActions) {
+        addConnect(store, mapStates, mapActions);
+        return connectComponent;
+    };
+
+    return connectComponent;
 }
+
+connect.createConnector = function (store) {
+    if (store instanceof Store) {
+        return (mapStates, mapActions) => connect(mapStates, mapActions, store);
+    }
+
+    throw new Error(store + ' must be an instance of Store!');
+};
+
+connect.san = function (store, mapStates, mapActions) {
+    return connect(store, mapStates, mapActions);
+};
+
+export default connect;

@@ -8,8 +8,7 @@
 
 import Store from './store';
 import store from './default-store';
-import createConnector from './connect/createConnector';
-import createSanConnector from './connect/createSanConnector';
+import connect from './connect';
 
 
 /**
@@ -19,12 +18,6 @@ import createSanConnector from './connect/createSanConnector';
  */
 export let version = '2.1.3';
 
-export {Store, store};
+export {Store, store, connect};
 
-export let connect = {
-    san: createConnector(store),
-    createConnector
-};
-
-export let sanConnector = createSanConnector(store);
 
