@@ -7,22 +7,10 @@
  */
 
 import Store from './store';
+import store from './default-store';
 import createConnector from './connect/createConnector';
 import createSanConnector from './connect/createSanConnector';
-import emitDevtool from './devtool/emitter';
 
-
-/**
- * 默认的全局 Store 实例
- * 通常我们认为在一个应用应该具有一个全局唯一的 store，管理整个应用状态
- *
- * @type {Store}
- */
-export let store = new Store({name: '__default__'});
-
-// Alternatives for not receiving the events including default store info from
-// connector.
-emitDevtool('store-default-inited', {store});
 
 /**
  * 版本号
@@ -31,7 +19,7 @@ emitDevtool('store-default-inited', {store});
  */
 export let version = '2.1.3';
 
-export {Store};
+export {Store, store};
 
 export let connect = {
     san: createConnector(store),
