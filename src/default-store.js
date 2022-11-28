@@ -10,14 +10,15 @@
 import Store from './store';
 import emitDevtool from './devtool/emitter';
 
+let defaultStore = new Store({name: '__default__'});
 /**
  * 全局默认 Store 实例
  * 通常，在一个应用应该具有一个全局唯一的 store，管理整个应用状态
  *
  * @type {Store}
  */
-export default new Store({name: '__default__'});
+export default defaultStore;
 
 // Alternatives for not receiving the events including default store info from
 // connector.
-emitDevtool('store-default-inited', {store});
+emitDevtool('store-default-inited', {defaultStore});

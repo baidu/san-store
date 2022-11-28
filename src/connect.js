@@ -6,8 +6,11 @@
  * @author errorrik
  */
 
+import parseName from './parse-name';
+import calcUpdateInfo from './calc-update-info';
 import defaultStore from './default-store';
 import Store from './store';
+
 
 
 let extendsAsClass;
@@ -71,7 +74,8 @@ function connect(store, mapStates, mapActions) {
         let mapStateCount = 0;
         let mapStateKeys = Object.keys(mapStates);
         for (let i = 0; i < mapStateKeys.length; i++) {
-            let mapState = mapStates[mapStateKeys[i]];
+            let key = mapStateKeys[i];
+            let mapState = mapStates[key];
             let mapInfo = {dataName: key};
 
             switch (typeof mapState) {
@@ -153,7 +157,7 @@ function connect(store, mapStates, mapActions) {
                 // listen store change
                 let listener = diff => {
                     for (let i = 0; i < mapStateCount; i++) {
-                        let stateInfo = mapStateInfo[i];
+                        let stateInfo = mapStateInfos[i];
 
                         if (typeof stateInfo.getter === 'function') {
                             this.data.set(
@@ -217,6 +221,10 @@ function connect(store, mapStates, mapActions) {
 
             for (let i = 0; i < connects.length; i++) {
                 const {mapActions, store} = connects[i];
+                if (!mapActions) {
+                    continue;
+                }
+
                 if (mapActions instanceof Array) {
                     for (let i = 0; i < mapActions.length; i++) {
                         let actionName = mapActions[i];
@@ -251,7 +259,7 @@ function connect(store, mapStates, mapActions) {
 
 connect.createConnector = function (store) {
     if (store instanceof Store) {
-        return (mapStates, mapActions) => connect(mapStates, mapActions, store);
+        return (mapStates, mapActions) => connect(store, mapStates, mapActions);
     }
 
     throw new Error(store + ' must be an instance of Store!');

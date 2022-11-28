@@ -25,7 +25,7 @@ export default function calcUpdateInfo(info, diff) {
             let targetLen = target.length;
 
             for (; j < targetLen && j < stateNameLen; j++) {
-                if (info.stateName[j] !== target[j]) {
+                if (info.stateName[j] != target[j]) {
                     matchThisDiff = false;
                     break;
                 }
