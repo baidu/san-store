@@ -9,39 +9,46 @@
 import {data, onInited, onDisposed, method} from 'san-composition';
 import calcUpdateInfo from './calc-update-info';
 import parseName from './parse-name';
-import Store from './store';
+import {Store, store as defaultStore} from 'san-store';
 import emitDevtool from './devtool/emitter';
 
-function useState(store, name, stateName = name) {
-    const stateData = data(name);
+export function useState(store, stateName, dataName) {
+    if (!(store instanceof Store)) {
+        dataName = stateName || store;
+        stateName = store;
+        store = defaultStore;
+    }
+
+    const stateData = data(dataName);
     if (!stateData) {
         return;
     }
+
     // 一个store对应一个listener，一次更新多个state
     let storeListener = null;
     onInited(() => {
         const componentInstance = stateData.component;
-        if (!componentInstance.__mapStates) {
-            componentInstance.__mapStates = new Map();
+        if (!componentInstance.__useStates) {
+            componentInstance.__useStates = {};
         }
-        if (!componentInstance.__mapStates.has(store)) {
+
+        if (!componentInstance.__useStates[store.id]) {
             // 一个store使用一个listener
             storeListener = diff => {
-                const mapStates = componentInstance.__mapStates.get(store);
-                const mapStatesKey = Object.keys(mapStates);
+                const useStates = componentInstance.__useStates[store.id];
+                const dataNames = Object.keys(useStates);
                 // init data
-                for (let i = 0; i < mapStatesKey.length; i++) {
-                    const dataName = mapStatesKey[i];
-                    if (typeof mapStates[dataName] === 'function') {
-                        componentInstance.data.set(
-                            dataName,
-                            mapStates[dataName](store.getState(), componentInstance)
-                        );
+                for (let i = 0; i < dataNames.length; i++) {
+                    const dataName = dataNames[i];
+                    const stateName = useStates[dataName];
+
+                    if (typeof stateName === 'function') {
+                        data(dataName).set(stateName(store.getState()))
                     }
                     else {
                         let updateInfo = calcUpdateInfo({
                             dataName,
-                            stateName: parseName(mapStates[dataName])
+                            stateName: parseName(stateName)
                         }, diff);
 
                         if (updateInfo) {
@@ -60,33 +67,39 @@ function useState(store, name, stateName = name) {
             };
             store.listen(storeListener);
         }
+
         // initData
         if (typeof stateName === 'function') {
-            stateData.set(stateName(store.getState(), componentInstance));
+            stateData.set(stateName(store.getState()));
         }
         else {
             stateData.set(store.getState(stateName));
         }
+
         // save mapState
-        let mapStates = componentInstance.__mapStates.get(store) || {};
+        let useStates = componentInstance.__useStates[store.id] || {};
+
         // 声明相同的值时覆盖
-        mapStates[name] = stateName;
-        componentInstance.__mapStates.set(store, mapStates);
-        store.log && emitDevtool('store-comp-inited', {
-            mapStates,
+        useStates[dataName] = stateName;
+        componentInstance.__useStates[store.id] = useStates;
+        store.log && emitDevtool('store-use-state-comp-inited', {
+            stateName,
+            dataName,
             store,
             component: componentInstance,
         });
     });
+
     // 自动销毁
     onDisposed(() => {
         storeListener && store.unlisten(storeListener);
-        store.log && emitDevtool('store-comp-disposed', {
-            mapStates: stateData.component.__mapStates.get(store),
+        store.log && emitDevtool('store-use-state-comp-disposed', {
+            useStates: stateData.component.__useStates[store.id],
             store,
             component: stateData.component
         });
     });
+
     return stateData;
 };
 
@@ -97,28 +110,14 @@ function useState(store, name, stateName = name) {
  * @param {string} actionName store内的action name
  * @returns {Function}
  */
-function useAction(store, actionName) {
-    method(actionName, payload => {
+export function useAction(store, actionName, methodName) {
+    if (!(store instanceof Store)) {
+        methodName = actionName;
+        actionName = store;
+        store = defaultStore;
+    }
+
+    return method(methodName || actionName, payload => {
         return store.dispatch(actionName, payload);
     });
-}
-
-export function createUseHelper(defaultStore) {
-    if (defaultStore instanceof Store) {
-        return {
-            useState: (storeOrName, name, stateName) => {
-                if (!storeOrName instanceof Store) {
-                    return useState(defaultStore, storeOrName, name);
-                }
-                return useState(storeOrName, name, stateName);
-            },
-            useAction: (storeOrName, name) => {
-                if (!storeOrName instanceof Store) {
-                    return useAction(defaultStore, storeOrName);
-                }
-                return useAction(storeOrName, name);
-            }
-        };
-    }
-    throw new Error(defaultStore + ' must be an instance of Store!');
 }
