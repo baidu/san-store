@@ -15,7 +15,10 @@ let config = {
 
     resolve: {
         alias: {
-            'san-store': path.resolve(__dirname, '../dist/san-store.source.js')
+
+            'san-store/use': path.resolve(__dirname, '../src/use.js'),
+            'san-store': path.resolve(__dirname, '../dist/san-store.source.js'),
+            'san-composition': path.resolve(__dirname, '../node_modules/san-composition/index.js')
         }
     }
 };

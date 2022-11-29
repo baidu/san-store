@@ -2,7 +2,7 @@ import {Store, connect} from 'san-store';
 import san from 'san';
 import {updateBuilder} from 'san-update';
 
-describe('Connect createConnector component', () => {
+describe('connect.createConnector', () => {
     const store = new Store();
     store.addAction('reset-for-connect', () => {
         let resetBuilder = updateBuilder()

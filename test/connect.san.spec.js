@@ -142,7 +142,7 @@ function _createClass(Constructor, protoProps, staticProps) {
     return Constructor;
 }
 
-describe('Connect san component', () => {
+describe('connect.san', () => {
     store.addAction('reset-for-connect', () => {
         let resetBuilder = updateBuilder()
             .set('name', 'errorrik')
