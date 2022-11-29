@@ -54,6 +54,7 @@ export default class Store {
         this.actions = actions;
         this.log = log;
         this.name = name;
+        this.id = guid();
 
         this.listeners = [];
 
