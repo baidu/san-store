@@ -93,7 +93,8 @@ describe('connect', () => {
             {
                 name: 'name',
                 email: 'emails[0]'
-            })(
+            }
+        )(
             san.defineComponent({
                 template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
             })
@@ -124,7 +125,7 @@ describe('connect', () => {
             }
         });
 
-        let MyComponent = connect(myStore,{name: 'name'})
+        let MyComponent = connect(myStore, {name: 'name'})
             .connect(myStore2, {email: 'emails[0]'})(
                 san.defineComponent({
                     template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
@@ -171,7 +172,7 @@ describe('connect', () => {
             }
         });
 
-        let MyComponent = connect(myStore,{name: 'name'})
+        let MyComponent = connect(myStore, {name: 'name'})
             .connect(myStore2, {email: 'emails[0]'})(
                 san.defineComponent({
                     template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
@@ -228,7 +229,7 @@ describe('connect', () => {
             }
         });
 
-        let MyComponent = connect(myStore,{name: 'name'}, ['updateName'])
+        let MyComponent = connect(myStore, {name: 'name'}, ['updateName'])
             .connect(myStore2, {email: 'emails[0]'}, ['updateEmail'])(
                 san.defineComponent({
                     template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
@@ -285,7 +286,7 @@ describe('connect', () => {
             }
         });
 
-        let MyComponent = connect(myStore,{name: 'name'}, {name:'updateName'})
+        let MyComponent = connect(myStore, {name: 'name'}, {name:'updateName'})
             .connect(myStore2, {email: 'emails[0]'}, {email:'updateEmail'})(
                 san.defineComponent({
                     template: '<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>'
@@ -313,6 +314,77 @@ describe('connect', () => {
             document.body.removeChild(wrap);
             done();
         });
+    });
 
+    it('data from many stores, one store update by other store', done => {
+        let myStore0 = new Store({
+            initData: {
+                username: ''
+            },
+
+            actions: {
+                userLogin(payload) {
+                    return updateBuilder()
+                        .set('username', payload);
+                }
+            }
+        });
+        let myStore = new Store({
+            initData: {
+                name: 'erik'
+            },
+            actions: {
+                updateName(payload) {
+                    myStore0.dispatch('userLogin', payload);
+                    return updateBuilder()
+                        .set('name', payload);
+                }
+            }
+        });
+        let myStore2 = new Store({
+            initData: {
+                emails: ['erik@gmail.com']
+            },
+
+            actions: {
+                updateEmail(payload) {
+                    return updateBuilder()
+                        .set('emails[0]', payload);
+                }
+            }
+        });
+
+        let MyComponent = connect(myStore, {name: 'name'}, {name:'updateName'})
+            .connect(myStore0, {username: 'username'})
+            .connect(myStore2, {email: 'emails[0]'}, {email:'updateEmail'})(
+                san.defineComponent({
+                    template: `<div>
+                        <i title="{{username}}">current user: {{username}}</i>
+                        <u title="{{name}}-{{email}}">{{name}}-{{email}}</u>
+                    </div>`
+                }
+            )
+        );
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+        expect(u.title).toBe('erik-erik@gmail.com');
+
+        myComponent.actions.name('errorrik');
+
+        san.nextTick(() => {
+            let u = wrap.getElementsByTagName('u')[0];
+            expect(u.title).toBe('errorrik-erik@gmail.com');
+
+            let i = wrap.getElementsByTagName('i')[0];
+            expect(i.title).toBe('errorrik');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
     });
 });
