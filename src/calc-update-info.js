@@ -25,6 +25,7 @@ export default function calcUpdateInfo(info, diff) {
             let targetLen = target.length;
 
             for (; j < targetLen && j < stateNameLen; j++) {
+                // eslint-disable-next-line
                 if (info.stateName[j] != target[j]) {
                     matchThisDiff = false;
                     break;

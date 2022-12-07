@@ -51,7 +51,7 @@ export function useState(store, stateName, dataName = stateName) {
                     const stateName = useStates[dataName];
 
                     if (typeof stateName === 'function') {
-                        data(dataName).set(stateName(store.getState()))
+                        data(dataName).set(stateName(store.getState()));
                     }
                     else {
                         let updateInfo = calcUpdateInfo({
