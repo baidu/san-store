@@ -14,13 +14,13 @@ module.exports = function (config) {
     webpackMiddleware: {
       noInfo: true
     },
-    plugins: [
-      'karma-jasmine',
-      'karma-sourcemap-loader',
-      'karma-webpack',
-      'karma-chrome-launcher'
-    ],
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
+    customLaunchers: {
+        Chrome_travis_ci: {
+            base: 'ChromeHeadless',
+            flags: ['--no-sandbox']
+        }
+    },
     reporters: ['progress'],
     singleRun: true,
   })
