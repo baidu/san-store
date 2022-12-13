@@ -18,7 +18,7 @@ import emitDevtool from './devtool/emitter';
  * @param {Store} store store
  * @param {string} stateName store内的action name
  * @param {string?} dataName 组件的data name
- * @returns {Function}
+ * @returns {DataProxy}
  */
 export function useState(store, stateName, dataName = stateName) {
     if (!(store instanceof Store)) {
@@ -117,7 +117,6 @@ export function useState(store, stateName, dataName = stateName) {
  * @param {Store} store store
  * @param {string} actionName store内的action name
  * @param {string?} methodName 组件的method name
- * @returns {Function}
  */
 export function useAction(store, actionName, methodName = actionName) {
     if (!(store instanceof Store)) {

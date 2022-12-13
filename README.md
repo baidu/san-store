@@ -54,6 +54,7 @@ let UserNameEditor = connect.san({
 
 
 从例子开始和模仿比死啃枯燥的文档要更人性化。 [Todos项目](https://github.com/baidu/san-store/tree/master/example/todos) 和 [RealWorld App](https://github.com/ecomfe/san-realworld-app) 展示了如何在项目里使用 san-store 进行状态管理。
+[多store的Todos项目](https://github.com/baidu/san-store/tree/master/example/todos-multiple-store) 展示了如何再项目中使用 多 store connect 及 [composition api](https://github.com/baidu/san-composition) 的用法。
 
 本文档描述了 san-store 的基本使用场景。想了解 san-store 都提供了什么，可以参阅 [API文档](https://github.com/baidu/san-store/tree/master/doc/api.md)
 
@@ -324,7 +325,7 @@ const storeA = new Store({
         name:'erik'
     },
     actions:{
-        changeUserName() {
+        changeUserName(name) {
             return builder().set('user.name', name);
         }
     }
@@ -382,4 +383,99 @@ let UserNameEditor = connect.san(
         this.actions.change(this.data.get('name'));
     }
 }));
+```
+
+### connect 多个 store
+
+当实际业务中真的需要多个 Store 实例时，可以通过 [connect](https://github.com/baidu/san-store/blob/master/doc/api.md#connectcreateconnector) 自行创建 connector，连接 Store 实例和 San 组件。步骤如下：
+
+1. 创建 Store 实例
+2. 通过 [connect().connect()](https://github.com/baidu/san-store/blob/master/doc/api.md#connect()connect) 方式，即 connect 的链式调用实现 连接多个 store
+
+```js
+import {Store, connect} from 'san-store';
+
+// 创建模块A中的store实例
+const storeA = new Store({
+    initData: {
+        name:'erik'
+    },
+    actions:{
+        changeUserName(name) {
+            return builder().set('user.name', name);
+        }
+    }
+});
+
+const storeB = new Store({
+    initData: {
+        todos: []
+    },
+    actions:{
+        changeTodos(payload) {
+            return builder().set('todos', payload);
+        }
+    }
+});
+
+// 调用connect.createConnector方法，传入store实例
+const connectA = connect.createConnector(storeA);
+
+const Container = san.defineComponent({...});
+
+// 调用手动创建的connectA方法进行storeA和组件连接
+let NewUserNameEditor = connect(
+    storeA,
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+).connect(
+    storeB,
+    {todos: 'todos'},
+    ['changeTodos']
+)(Container);
+```
+
+### componsition api
+
+
+使用 [san-composition](https://github.com/baidu/san-composition) 可以使用 [use api](https://github.com/baidu/san-store/blob/master/doc/api.md#use) 连接 Store 实例和 San 组件：
+
+1. 使用 `useState` 定义数据。
+2. 使用 `useAction` 定义方法。
+
+```js
+import san from 'san';
+import {defineComponent, template, method} from 'san-composition';
+import {useState} from 'san-store/dist/san-store-use';
+import {Store} from 'san-store';
+
+// 创建模块A中的store实例
+const storeA = new Store({
+    initData: {
+        name:'erik'
+    },
+    actions:{
+        changeUserName(name) {
+            return builder().set('user.name', name);
+        }
+    }
+});
+
+export default defineComponent(context => {
+    template(`
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+        </div>
+    `);
+    const name = useState(myStore, 'user.name', 'name');
+    useAction(myStore, 'changeUserName');
+
+    method({
+        change: () => {
+            context.component.changeUserName(context.data.get('newName'));
+        }
+    });
+
+}, san);
+
 ```

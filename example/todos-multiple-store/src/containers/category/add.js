@@ -5,7 +5,7 @@ import ColorPicker from '../../components/ColorPicker.san';
 import catgoryStore from '../../store/category';
 import './style.less';
 
-export default defineComponent(context =>{
+export default defineComponent(context => {
     template(`
         <div class="form">
             <input
