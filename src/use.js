@@ -16,7 +16,7 @@ import emitDevtool from './devtool/emitter';
  * 操作store内数据
  *
  * @param {Store} store store
- * @param {string} stateName store内的action name
+ * @param {string|Function} stateName store内的action name 或函数
  * @param {string?} dataName 组件的data name
  * @returns {DataProxy}
  */
