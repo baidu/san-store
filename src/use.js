@@ -12,7 +12,15 @@ import parseName from './parse-name';
 import {Store, store as defaultStore} from 'san-store';
 import emitDevtool from './devtool/emitter';
 
-export function useState(store, stateName, dataName) {
+/**
+ * 操作store内数据
+ *
+ * @param {Store} store store
+ * @param {string|Function} stateName store内的action name 或函数
+ * @param {string?} dataName 组件的data name
+ * @returns {DataProxy}
+ */
+export function useState(store, stateName, dataName = stateName) {
     if (!(store instanceof Store)) {
         dataName = stateName || store;
         stateName = store;
@@ -43,7 +51,7 @@ export function useState(store, stateName, dataName) {
                     const stateName = useStates[dataName];
 
                     if (typeof stateName === 'function') {
-                        data(dataName).set(stateName(store.getState()))
+                        data(dataName).set(stateName(store.getState()));
                     }
                     else {
                         let updateInfo = calcUpdateInfo({
@@ -108,16 +116,16 @@ export function useState(store, stateName, dataName) {
  *
  * @param {Store} store store
  * @param {string} actionName store内的action name
- * @returns {Function}
+ * @param {string?} methodName 组件的method name
  */
-export function useAction(store, actionName, methodName) {
+export function useAction(store, actionName, methodName = actionName) {
     if (!(store instanceof Store)) {
-        methodName = actionName;
+        methodName = actionName || store;
         actionName = store;
         store = defaultStore;
     }
 
-    return method(methodName || actionName, payload => {
+    return method(methodName, payload => {
         return store.dispatch(actionName, payload);
     });
 }

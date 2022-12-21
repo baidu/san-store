@@ -313,7 +313,7 @@ const myStore = new Store({
         name:'erik'
     },
     actions:{
-        changeUserName() {
+        changeUserName(name) {
             return builder().set('user.name', name);
         }
     }
@@ -338,3 +338,178 @@ let UserNameEditor = connectMyStore(
     }
 }));
 ```
+
+### connect().connect
+
+connect 可实现链式调用，实现一个组件连接多个 store 的操作。
+
+
+**描述**
+
+`{Function}connect(store, mapStates, mapActions)`
+
+**参数**
+
+- `{Store} store` connector对应的store实例
+- `{Object} mapStates` 状态到组件数据的映射信息
+- `{Object|Array?} mapActions` store的action操作到组件actions方法的映射信息
+
+**返回**
+
+`{ComponentClass}function({ComponentClass}Component)`
+
+connect 返回一个操作的函数，这个函数可以接受一个组件类作为参数，返回一个新的经过 connect 操作的组件类，可以直接实例化该组件类，也可以继续调用该组件类的 connect 方法，连接一个新的 store，返回的结果是一个新的、连接了之前调用的多个store 的组件类。
+
+**示例**
+
+```javascript
+import {store, connect} from 'san-store';
+import userStore from '../store/user';
+import todoStore from '../store/todo';
+let UserNameEditor = connect(
+    userStore,
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+).connect(
+    todoStore,
+    {todo: 'todos'},
+    {changeTodos: 'changeTodos'}
+)(san.defineComponent({
+    template: `
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+            <ul>
+                <li s-for="item in todo">{{item}}</li>
+            </ul>
+        </div>
+    `,
+
+    change() {
+        this.actions.change(this.data.get('newName'));
+    }
+}));
+```
+
+## use
+
+`useState` 和 `useAction` 是 san-store 的 [componsition api](https://github.com/baidu/san-composition) 用法。
+
+用于将 store 内的 state 和 action 绑定到当前组件。
+
+### useState
+
+将 store 内的一个 state 绑定到当前组件，并返回数据的引用，当 store 内数据更新时，当前组件内对应数据项即更新。
+
+**描述**
+
+`{DataProxy}useState(store, stateName, dataName?)`
+
+**参数**
+
+
+- `{Store} store` store 实例
+- `{string} stateName` store内的 state name
+- `{string?} dataName` 组件的 data name
+
+**返回**
+
+`{DataProxy}`
+
+返回绑定至组件内的数据代理
+
+
+**示例**
+
+```javascript
+import san from 'san';
+import {defineComponent, template, onAttached} from 'san-composition';
+import {useState} from 'san-store/dist/san-store-use';
+import {Store} from 'san-store';
+
+// 创建store实例
+const myStore = new Store({
+    initData: {
+        name:'erik'
+    },
+    actions:{
+        changeUserName(name) {
+            return builder().set('user.name', name);
+        }
+    }
+});
+
+
+export default defineComponent(() => {
+    template(`
+        <div>{{name}}</div>
+    `);
+    const name = useState(myStore, 'user.name', 'name');
+
+    onAttached(() => {
+        console.log(name.get())
+    });
+
+}, san);
+
+```
+
+### useAction
+
+在当前组件内定义派发 store 内对应 action 的方法。
+
+**描述**
+
+`{*}useAction(store, actionName, methodName?)`
+
+**参数**
+
+- `{Store} store` store 实例
+- `{string} stateName` store 内的 action name
+- `{string?} dataName` 组件的 method name
+
+
+**返回**
+
+无
+
+
+**示例**
+
+```javascript
+import san from 'san';
+import {defineComponent, template, method} from 'san-composition';
+import {useState, useAction} from 'san-store/dist/san-store-use';
+import {Store} from 'san-store';
+
+// 创建store实例
+const myStore = new Store({
+    initData: {
+        name:'erik'
+    },
+    actions:{
+        changeUserName(name) {
+            return builder().set('user.name', name);
+        }
+    }
+});
+
+
+export default defineComponent(context => {
+    template(`
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+        </div>
+    `);
+    const name = useState(myStore, 'user.name', 'name');
+    useAction(myStore, 'changeUserName');
+
+    method({
+        change: () => {
+            context.component.changeUserName(context.data.get('newName'));
+        }
+    });
+
+}, san);
+
+```
+

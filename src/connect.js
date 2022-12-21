@@ -10,7 +10,7 @@ import parseName from './parse-name';
 import calcUpdateInfo from './calc-update-info';
 import defaultStore from './default-store';
 import Store from './store';
-
+import emitDevtool from './devtool/emitter';
 
 
 let extendsAsClass;
@@ -67,7 +67,7 @@ function connect(store, mapStates, mapActions) {
         if (!(store instanceof Store)) {
             mapActions = mapStates;
             mapStates = store;
-            store = defaultStore
+            store = defaultStore;
         }
 
         let mapStateInfos = [];
@@ -145,7 +145,7 @@ function connect(store, mapStates, mapActions) {
 
                     if (typeof stateInfo.getter === 'function') {
                         this.data.set(
-                            stateInfo.dataName, 
+                            stateInfo.dataName,
                             stateInfo.getter(store.getState(), this)
                         );
                     }

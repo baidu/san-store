@@ -1,0 +1,6 @@
+{
+    "extends": "@ecomfe/stylelint-config",
+    "rules": {
+        "selector-list-comma-newline-after": null
+    }
+}
