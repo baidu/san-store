@@ -2,7 +2,7 @@
 
 [![NPM version](http://img.shields.io/npm/v/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
 [![License](https://img.shields.io/github/license/baidu/san-store.svg?style=flat-square)](https://npmjs.org/package/san-store)
-[![CircleCI](https://circleci.com/gh/baidu/san-store.svg?style=svg)](https://circleci.com/gh/baidu/san-store)
+[![Build Status](https://github.com/baidu/san-store/workflows/CI/badge.svg)](https://github.com/baidu/san-store/actions)
 
 [San](https://baidu.github.io/san/) 框架的官方应用状态管理套件，其理念是类似 flux 的单向流。
 
