@@ -28,7 +28,7 @@
     "rollup": "^1.27.14",
     "rollup-plugin-babel": "^4.3.3",
     "san": "^3.11.0",
-    "san-composition": "^1.2.2",
+    "san-composition": "^1.3.0",
     "san-update": "2.0.0",
     "uglify-js": "^2.7.5",
     "webpack": "^4.41.4",
@@ -44,7 +44,7 @@
   "dependencies": {},
   "peerDependencies": {
     "san-update": "2.x",
-    "san-composition": "1.x"
+    "san-composition": "^1.3.0"
   },
   "browserslist": [
     "IE 8"
