@@ -1,3 +1,13 @@
+2.2.0
+---------
+
+- [新特性] 支持 connect 链式调用连接多个store: connect([store, ]mapStates[, mapActions]).connect([store, ]mapStates[, mapActions])...
+- [新特性] 新增 composition api: useState 定义 state, useAction 定义方法
+- [新特性] 新增 typescript 类型支持
+- [废弃] connect.san 废弃，使用 connect([store, ]mapStates[, mapActions]) 替代
+- [废弃] connect.createConnector 废弃，使用 connect([store, ]mapStates[, mapActions]) 替代
+
+
 2.1.3
 ---------
 
