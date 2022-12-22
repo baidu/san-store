@@ -52,15 +52,15 @@ describe('use', () => {
             return builder;
         });
 
-        let MyComponent = defineComponent(context => {
+        let MyComponent = defineComponent(() => {
             template('<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>');
 
             useState('name');
             useState('emails[0]', 'email');
 
-            useAction('for-use-1', 'update');
+            let update = useAction('for-use-1', 'update');
             onAttached(() => {
-                context.component.update({
+                update({
                     name: 'erik',
                     email: 'erik@gmail.com'
                 });

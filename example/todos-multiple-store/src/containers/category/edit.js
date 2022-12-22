@@ -1,9 +1,11 @@
 import san from 'san';
 import {defineComponent, template, components, onAttached, method} from 'san-composition';
-import {useState, useAction} from '@use';
+import {useState, useAction} from 'san-store/use';
 import ColorPicker from '../../components/ColorPicker.san';
 import catgoryStore from '../../store/category';
-import './style.less';;
+import './style.less';
+
+;
 
 export default defineComponent(() => {
     template(`
@@ -21,22 +23,22 @@ export default defineComponent(() => {
         </ul>
     `);
     components({'ui-colorpicker': ColorPicker});
-    const categories = useState(catgoryStore, 'categories', 'categories');
-    useAction(catgoryStore, 'fetchCategories', 'list');
-    useAction(catgoryStore, 'startRmCategory');
-    useAction(catgoryStore, 'startEditCategory');
+    useState(catgoryStore, 'categories', 'categories');
+    let getList = useAction(catgoryStore, 'fetchCategories', 'list');
+    let startRm = useAction(catgoryStore, 'startRmCategory');
+    let startEdit = useAction(catgoryStore, 'startEditCategory');
     method({
         rm: function (index) {
             let category = this.data.get('categories')[index];
-            context.component.startRmCategory(category.id);
+            startRm(category.id);
         },
-    
+
         edit: function (index) {
             let category = this.data.get('categories')[index];
-            context.component.startEditCategory(category);
+            startEdit(category);
         }
-    })
+    });
     onAttached(() => {
-        context.component.list();
+        getList();
     });
 }, san);

@@ -496,11 +496,11 @@ export default defineComponent(() => {
 
 **>= 2.2.0**
 
-在当前组件内定义派发 store 内对应 action 的方法。
+在当前组件内定义派发 store 内对应 action 的方法, 并返回该方法的引用。
 
 **描述**
 
-`{*}useAction(store, actionName, methodName?)`
+`{Function}useAction(store, actionName, methodName?)`
 
 **参数**
 
@@ -544,11 +544,11 @@ export default defineComponent(context => {
         </div>
     `);
     const name = useState(myStore, 'user.name', 'name');
-    useAction(myStore, 'changeUserName');
+    let changeUserName = useAction(myStore, 'changeUserName');
 
     method({
         change: () => {
-            context.component.changeUserName(context.data.get('newName'));
+            changeUserName(context.data.get('newName'));
         }
     });
 
