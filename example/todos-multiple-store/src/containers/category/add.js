@@ -1,6 +1,6 @@
 import san from 'san';
 import {defineComponent, template, components, onAttached, method} from 'san-composition';
-import {useState, useAction} from '@use';
+import {useState, useAction} from 'san-store/use';
 import ColorPicker from '../../components/ColorPicker.san';
 import catgoryStore from '../../store/category';
 import './style.less';
@@ -36,30 +36,30 @@ export default defineComponent(context => {
     components({'ui-colorpicker': ColorPicker});
     const title = useState(catgoryStore, 'addingCategory.title', 'title');
     const color = useState(catgoryStore, 'addingCategory.color', 'color');
-    const finished = useState(catgoryStore, 'addingCategoryFinished', 'finished');
-    useAction(catgoryStore, 'startAddCategory', 'start');
-    useAction(catgoryStore, 'submitAddCategory', 'submit');
+    useState(catgoryStore, 'addingCategoryFinished', 'finished');
+    let startAddCategory = useAction(catgoryStore, 'startAddCategory');
+    let submitAddCategory = useAction(catgoryStore, 'submitAddCategory');
     method({
         submit: () => {
-            let title = title.get();
-            if (!title) {
+            let t = title.get();
+            if (!t) {
                 return;
             }
-    
-            context.component.submit({
-                title: title,
+
+            submitAddCategory({
+                title: t,
                 color: color.get()
             });
         },
-    
+
         cancel: () => {
             context.component.finish();
         },
-    
+
         finish: () => {
-            context.component.start();
+            startAddCategory();
             context.component.fire('finished');
-    
+
             if (!context.data.get('inDialog')) {
                 history.go(-1);
             }
@@ -67,8 +67,8 @@ export default defineComponent(context => {
 
     });
     onAttached(() => {
-        context.component.start();
-    
+        startAddCategory();
+
         context.component.watch('finished', value => {
             if (value) {
                 context.component.finish();

@@ -446,7 +446,7 @@ let NewUserNameEditor = connect(
 ```js
 import san from 'san';
 import {defineComponent, template, method} from 'san-composition';
-import {useState} from 'san-store/dist/san-store-use';
+import {useState} from 'san-store/use';
 import {Store} from 'san-store';
 
 // 创建模块A中的store实例
@@ -468,11 +468,11 @@ export default defineComponent(context => {
         </div>
     `);
     const name = useState(myStore, 'user.name', 'name');
-    useAction(myStore, 'changeUserName');
+    let changeUserName = useAction(myStore, 'changeUserName');
 
     method({
         change: () => {
-            context.component.changeUserName(context.data.get('newName'));
+            changeUserName(context.data.get('newName'));
         }
     });
 

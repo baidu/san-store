@@ -117,6 +117,7 @@ export function useState(store, stateName, dataName = stateName) {
  * @param {Store} store store
  * @param {string} actionName store内的action name
  * @param {string?} methodName 组件的method name
+ * @returns {Function} 可被调用的 dispatch 函数
  */
 export function useAction(store, actionName, methodName = actionName) {
     if (!(store instanceof Store)) {

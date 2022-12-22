@@ -71,8 +71,7 @@ module.exports = {
         '@assets': resolve('src/assets'),
         '@components': resolve('src/components'),
         '@store': resolve('src/lib/Store.js'),
-        '@app': resolve('src/lib/App.js'),
-        '@use': resolve('node_modules/san-store/dist/san-store-use.js')
+        '@app': resolve('src/lib/App.js')
     },
     chainWebpack: config => {
         // 这里可以用来扩展 webpack 的配置，使用的是 webpack-chain 语法
