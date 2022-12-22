@@ -1,5 +1,21 @@
 # san-store API
 
+- [store](#store)
+- [Store](#store-1)
+    - [初始化](#初始化)
+    - [getState](#getstate)
+    - [addAction](#addaction)
+    - [dispatch](#dispatch)
+    - [listen](#listen)
+    - [unlisten](#unlisten)
+- [connect](#connect)
+    - [connect()](#connect-1) 2.2+
+    - [connect.san](#connectsan) Deprecated
+    - [connect.createConnector](#connectcreateconnector) Deprecated
+- [use](#use) 2.2+
+    - [useState](#usestate) 2.2+
+    - [useAction](#useaction) 2.2+
+
 ## store
 
 默认的 Store 的实例，在 san-store 装载时创建，并提供了默认的connect方法: connect.san。 
