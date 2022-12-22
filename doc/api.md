@@ -243,7 +243,87 @@ connect 用于将 store 实例与 san 组件连接，从而：
 - 当 store 数据变更时，连接的组件数据也进行相应的变更
 - 组件内部像调用方法一样 dispatch action，组件实现时无需关心对具体 store 的依赖
 
+### connect()
+
+**>= 2.2.0**
+
+connect 可实现链式调用，实现一个组件连接多个 store 的操作。
+
+**描述**
+
+`{Function}connect(store, mapStates, mapActions)`
+
+**参数**
+
+- `{Store?} store` connector对应的store实例
+- `{Object} mapStates` 状态到组件数据的映射信息
+- `{Object|Array?} mapActions` store的action操作到组件actions方法的映射信息
+
+**返回**
+
+`{ComponentClass}function({ComponentClass}Component)`
+
+connect 操作函数。
+
+- 这个函数可以接受一个组件类作为参数，返回一个新的经过 connect 操作的组件类
+- 可以继续链式调用该函数的 connect 方法，连接一个新的 store，返回一个新的 connect 操作函数
+
+**示例**
+
+```javascript
+// connect 默认 store
+import {connect} from 'san-store';
+let UserNameEditor = connect(
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+)(san.defineComponent({
+    template: `
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+            <ul>
+                <li s-for="item in todo">{{item}}</li>
+            </ul>
+        </div>
+    `,
+
+    change() {
+        this.actions.change(this.data.get('newName'));
+    }
+}));
+```
+
+```javascript
+// connect 自多个 store
+import {store, connect} from 'san-store';
+import userStore from '../store/user';
+import todoStore from '../store/todo';
+let UserNameEditor = connect(
+    userStore,
+    {name: 'user.name'},
+    {change: 'changeUserName'}
+).connect(
+    todoStore,
+    {todo: 'todos'},
+    {changeTodos: 'changeTodos'}
+)(san.defineComponent({
+    template: `
+        <div>{{name}}
+            <input value="{=newName=}"><button on-click="change">change</button>
+            <ul>
+                <li s-for="item in todo">{{item}}</li>
+            </ul>
+        </div>
+    `,
+
+    change() {
+        this.actions.change(this.data.get('newName'));
+    }
+}));
+```
+
 ### connect.san
+
+**2.2.0后标记废弃。请直接使用 connect([store, ]mapStates[, mapActions])**
 
 默认 connector，对 san-store 装载时创建的默认 Store 的实例，进行 connect 操作。通常，connect 操作需要进行 2 次调用：
 
@@ -287,6 +367,8 @@ let UserNameEditor = connect.san(
 ```
 
 ### connect.createConnector
+
+**2.2.0后标记废弃。请直接使用 connect([store, ]mapStates[, mapActions])**
 
 创建 connector。connector 是一个函数，可以通过 2 次调用，对预先指定的 store 执行 connect 操作。调用方式参考上一章节 `connect.san`。
 
@@ -339,64 +421,21 @@ let UserNameEditor = connectMyStore(
 }));
 ```
 
-### connect().connect
-
-connect 可实现链式调用，实现一个组件连接多个 store 的操作。
-
-
-**描述**
-
-`{Function}connect(store, mapStates, mapActions)`
-
-**参数**
-
-- `{Store} store` connector对应的store实例
-- `{Object} mapStates` 状态到组件数据的映射信息
-- `{Object|Array?} mapActions` store的action操作到组件actions方法的映射信息
-
-**返回**
-
-`{ComponentClass}function({ComponentClass}Component)`
-
-connect 返回一个操作的函数，这个函数可以接受一个组件类作为参数，返回一个新的经过 connect 操作的组件类，可以直接实例化该组件类，也可以继续调用该组件类的 connect 方法，连接一个新的 store，返回的结果是一个新的、连接了之前调用的多个store 的组件类。
-
-**示例**
-
-```javascript
-import {store, connect} from 'san-store';
-import userStore from '../store/user';
-import todoStore from '../store/todo';
-let UserNameEditor = connect(
-    userStore,
-    {name: 'user.name'},
-    {change: 'changeUserName'}
-).connect(
-    todoStore,
-    {todo: 'todos'},
-    {changeTodos: 'changeTodos'}
-)(san.defineComponent({
-    template: `
-        <div>{{name}}
-            <input value="{=newName=}"><button on-click="change">change</button>
-            <ul>
-                <li s-for="item in todo">{{item}}</li>
-            </ul>
-        </div>
-    `,
-
-    change() {
-        this.actions.change(this.data.get('newName'));
-    }
-}));
-```
 
 ## use
 
-`useState` 和 `useAction` 是 san-store 的 [componsition api](https://github.com/baidu/san-composition) 用法。
+use 模块提供了 `useState` 和 `useAction` 方法，用于在 [componsition](https://github.com/baidu/san-composition) 形态的组件中使用 store。
 
-用于将 store 内的 state 和 action 绑定到当前组件。
+use 模块是独立模块，需要独立 import。
+
+```js
+import {useState} from 'san-store/use';
+```
+
 
 ### useState
+
+**>= 2.2.0**
 
 将 store 内的一个 state 绑定到当前组件，并返回数据的引用，当 store 内数据更新时，当前组件内对应数据项即更新。
 
@@ -423,7 +462,7 @@ let UserNameEditor = connect(
 ```javascript
 import san from 'san';
 import {defineComponent, template, onAttached} from 'san-composition';
-import {useState} from 'san-store/dist/san-store-use';
+import {useState} from 'san-store/use';
 import {Store} from 'san-store';
 
 // 创建store实例
@@ -455,6 +494,8 @@ export default defineComponent(() => {
 
 ### useAction
 
+**>= 2.2.0**
+
 在当前组件内定义派发 store 内对应 action 的方法。
 
 **描述**
@@ -470,7 +511,9 @@ export default defineComponent(() => {
 
 **返回**
 
-无
+`Function`
+
+可被调用的 dispatch 函数。
 
 
 **示例**
@@ -478,7 +521,7 @@ export default defineComponent(() => {
 ```javascript
 import san from 'san';
 import {defineComponent, template, method} from 'san-composition';
-import {useState, useAction} from 'san-store/dist/san-store-use';
+import {useState, useAction} from 'san-store/use';
 import {Store} from 'san-store';
 
 // 创建store实例
