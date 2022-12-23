@@ -55,11 +55,12 @@ describe('use', () => {
         let MyComponent = defineComponent(() => {
             template('<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>');
 
-            useState('name');
+            let nameData = useState('name');
             useState('emails[0]', 'email');
 
             let update = useAction('for-use-1', 'update');
             onAttached(() => {
+                expect(nameData.get()).toBe('errorrik');
                 update({
                     name: 'erik',
                     email: 'erik@gmail.com'
@@ -72,6 +73,9 @@ describe('use', () => {
         let wrap = document.createElement('div');
         document.body.appendChild(wrap);
         myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+        expect(u.title).toBe('errorrik-errorrik@gmail.com');
 
         san.nextTick(() => {
             let u = wrap.getElementsByTagName('u')[0];
@@ -157,23 +161,23 @@ describe('use', () => {
                 }
             }
         });
-        let myStore2;
+        let myStore2 = new Store({
+            initData: {
+                emails: ['erik@gmail.com']
+            },
+
+            actions: {
+                updateEmail(payload) {
+                    return updateBuilder()
+                        .set('emails[0]', payload);
+                }
+            }
+        });
 
         let MyComponent = defineComponent(() => {
             template('<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>');
 
-            myStore2 = new Store({
-                initData: {
-                    emails: ['erik@gmail.com']
-                },
-    
-                actions: {
-                    updateEmail(payload) {
-                        return updateBuilder()
-                            .set('emails[0]', payload);
-                    }
-                }
-            });
+            
             useState(myStore, 'name');
             useState(myStore2, 'emails[0]', 'email');
 
