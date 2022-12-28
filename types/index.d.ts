@@ -1,51 +1,79 @@
-import type {DataProxy} from 'san-composition';
-import type {Component} from 'san';
 
-type Func = () => any;
-type StringObj = {[key:string]: any};
+import type {DefinedComponentClass} from 'san';
 
-interface Options {
+
+
+interface UpdateBuilder {
+    buildWithDiff: () => (oldObject: {}) => {}
+}
+
+interface StoreOptions {
     initData?: {
         [key: string]: any
     },
     actions?: {
-        [key: string]: any
+        [key: string]: Action
     },
     log?: boolean,
     name?: string,
 }
 
-export declare class Store {
-    actions: StringObj;
+interface StateChangeInfo {
+    $change: string;
+    target: string[];
+    oldValue: any;
+    newValue: any;
+    splice?: {
+        index: number;
+        deleteCount: number;
+        insertions: any[];
+    };
+}
+
+interface StoreChangeListener {
+    (this: Store, changes: StateChangeInfo[]): void
+}
+
+type Action = (
+    payload: any, 
+    context?: {
+        getState?: (name: string) => any;
+        dispatch?: (name: string, payload: any) => Promise<void> | void; 
+    }
+) => Promise<void> | UpdateBuilder | void;
+
+type StateSelector =  (states: {}) => any;
+type MapStates = {[key: string]: string | StateSelector} | string[];
+type MapActions = {[key: string]: string} | string[];
+
+export class Store {
     log: boolean;
     name?: string;
     id: string;
 
-    constructor(options: Options);
+    constructor(options: StoreOptions);
 
     getState(name: string): any;
 
-    listen(listener: Func): void;
-    unlisten(listener: Func): void;
+    listen(listener: StoreChangeListener): void;
+    unlisten(listener: StoreChangeListener): void;
 
-    addAction(name: string, action: Func): void;
-    dispatch(name: string, payload: any): Function;
+    addAction(name: string, action: Action): void;
+    dispatch(name: string, payload: any): Promise<void> | void;
 }
 
-export declare function useState(stateName: string, dataName?: string): DataProxy;
-export declare function useState(stateName: (state: any) => any, dataName: string): DataProxy;
-export declare function useState(store: Store, stateName: string, dataName?:string): DataProxy;
-export declare function useState(store: Store, stateName: (state: any) => any, dataName: string): DataProxy;
-
-export declare function useAction(actionName: string, methodName?: string): Func;
-export declare function useAction(store: Store, actionName: string, methodName?: string): Func;
-
-type MapStates = {[key: string]: string | Func;}  | string[];
-type MapActions = string[];
-
-export declare function connect(store: Store, mapStates: MapStates, mapActions: MapActions): Component;
-type ConnectComponent = {
-    (ComponentClass: Component): Component;
-    connect(store: Store, mapStates: MapStates, mapActions: MapActions): ConnectComponent;
+interface Connector {
+    (ComponentClass: DefinedComponentClass<{}, {}>): DefinedComponentClass<{}, {}>;
+    connect(mapStates: MapStates): Connector;
+    connect(store: Store, mapStates: MapStates): Connector;
+    connect(mapStates: MapStates, mapActions: MapActions): Connector;
+    connect(store: Store, mapStates: MapStates, mapActions: MapActions): Connector;
 }
-export declare function connect(store: Store, mapStates: MapStates, mapActions: MapActions): ConnectComponent;
+
+export function connect(mapStates: MapStates): Connector;
+export function connect(store: Store, mapStates: MapStates): Connector;
+export function connect(mapStates: MapStates, mapActions: MapActions): Connector;
+export function connect(store: Store, mapStates: MapStates, mapActions: MapActions): Connector;
+
+export const version: string;
+export const store: Store;
