@@ -18,7 +18,7 @@
 
 ## store
 
-默认的 Store 的实例，在 san-store 装载时创建，并提供了默认的connect方法: connect.san。 
+默认的 Store 的实例，在 san-store 装载时创建。connect 方法也将默认 connect 到该实例。
 
 **示例**
 

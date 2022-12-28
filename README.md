@@ -43,7 +43,7 @@ store.addAction('changeUserName', function (name) {
 });
 
 
-let UserNameEditor = connect.san({
+let UserNameEditor = connect({
     name: 'user.name'
 })(san.defineComponent({
     submit() {
@@ -282,45 +282,41 @@ store.dispatch('addArticle', {}).then(() => {
 
 ### connect到默认store
 
-[connect.san](https://github.com/baidu/san-store/blob/master/doc/api.md#connectsan) 方法对 **默认store实例** 和 [San](https://baidu.github.io/san/) 组件进行连接，步骤和 redux 类似：
+[connect](https://github.com/baidu/san-store/blob/master/doc/api.md#connect-1) 方法支持对 **默认store实例** 和 [San](https://baidu.github.io/san/) 组件进行连接，步骤和 redux 类似：
 
-1. 通过 [connect.san](https://github.com/baidu/san-store/blob/master/doc/api.md#connectsan) 方法创建一个 connect 组件的函数
-2. 调用这个函数对组件进行connect
+1. 通过 [connect](https://github.com/baidu/san-store/blob/master/doc/api.md#connect-1) 方法创建一个 connect 组件的函数
+2. 调用这个函数对组件进行 connect
 
 ```javascript
 import {store, connect} from 'san-store';
 
-let connector = connect.san(
+const connector = connect(
     {name: 'user.name'},
     {change: 'changeUserName'}
 );
-let NewUserNameEditor = connector(UserNameEditor);
+const UserNameEditor = san.defineComponent({/*...*/});
+const NewUserNameEditor = connector(UserNameEditor);
 ```
 
 通常，我们只需要对当前声明的组件进行 connect。此时可以合并成一句
 
 ```javascript
-let UserNameEditor = connect.san(
+const UserNameEditor = san.defineComponent({/*...*/});
+const NewUserNameEditor = connect(
     {name: 'user.name'},
     {change: 'changeUserName'}
-)(san.defineComponent({
-    // ...
-}));
+)(UserNameEditor);
 ```
 
 ### connect到自己创建的store
 
-当实际业务中真的需要多个 Store 实例时，可以通过 [connect.createConnector](https://github.com/baidu/san-store/blob/master/doc/api.md#connectcreateconnector) 自行创建 connector，连接 Store 实例和 San 组件。步骤如下：
-
-1. 创建 Store 实例
-2. 通过 [connect.createConnector](https://github.com/baidu/san-store/blob/master/doc/api.md#connectcreateconnector) 创建一个 connect函数
-3. 调用这个函数对刚刚声明的 Store 实例和组件进行 connect
+当实际业务中需要多个 Store 实例时，可以自行创建 Store 实例。connect 方法支持连接到指定的 Store 实例。
 
 ```js
 import {Store, connect} from 'san-store';
 
-// 创建模块A中的store实例
-const storeA = new Store({
+// 自行创建 store 实例
+const myStore = new Store({
     initData: {
         name:'erik'
     },
@@ -331,13 +327,11 @@ const storeA = new Store({
     }
 });
 
-// 调用connect.createConnector方法，传入store实例
-const connectA = connect.createConnector(storeA);
+const UserNameEditor = san.defineComponent({/*...*/});
 
-const UserNameEditor = san.defineComponent({...});
-
-// 调用手动创建的connectA方法进行storeA和组件连接
-let NewUserNameEditor = connectA(
+// connect 时提供自创建的 storeA 
+const NewUserNameEditor = connect(
+    myStore,
     {name: 'user.name'},
     {change: 'changeUserName'}
 )(UserNameEditor);
@@ -350,8 +344,7 @@ let NewUserNameEditor = connectA(
 ```javascript
 import {store, connect} from 'san-store';
 
-
-let UserNameEditor = connect.san(
+const NewUserNameEditor = connect(
     {name: 'user.name'}
 )(san.defineComponent({
     // connect 后，name 数据项由 store 提供
@@ -360,9 +353,9 @@ let UserNameEditor = connect.san(
 ```
 
 
-### 组件上可直接调用的dispatch action方法
+### 组件上可直接调用的 dispatch action 方法
 
-通常我们在组件内通过调用 `store.dispatch(actionName, payload)` 方法更新应用状态。但如果在组件中也这么做，就会有些问题：
+使用 store 时，我们可以通过调用 `store.dispatch(actionName, payload)` 方法更新应用状态。但如果在组件中也这么做，就会有些问题：
 
 - 由于 actionName 的应用全局唯一性，名字需要比较完整，对于组件来说这么长的名称会显得比较冗余
 - 组件实现时，得关心对具体 store 的依赖
@@ -373,7 +366,7 @@ let UserNameEditor = connect.san(
 ```javascript
 import {store, connect} from 'san-store';
 
-let UserNameEditor = connect.san(
+const UserNameEditor = connect(
     {name: 'user.name'},
     {change: 'changeUserName'}
 )(san.defineComponent({
@@ -387,10 +380,10 @@ let UserNameEditor = connect.san(
 
 ### connect 多个 store
 
-当实际业务中真的需要多个 Store 实例时，可以通过 [connect](https://github.com/baidu/san-store/blob/master/doc/api.md#connectcreateconnector) 自行创建 connector，连接 Store 实例和 San 组件。步骤如下：
+当实际业务中真的需要多个 Store 实例时，可以通过 [connect](https://github.com/baidu/san-store/blob/master/doc/api.md#connect-1) 自行创建 connector，连接 Store 实例和 San 组件。步骤如下：
 
 1. 创建 Store 实例
-2. 通过 [connect().connect()](https://github.com/baidu/san-store/blob/master/doc/api.md#connect()connect) 方式，即 connect 的链式调用实现 连接多个 store
+2. 通过 [connect().connect()](https://github.com/baidu/san-store/blob/master/doc/api.md#connect-1) 方式，即 connect 的链式调用实现 连接多个 store
 
 ```js
 import {Store, connect} from 'san-store';
@@ -418,13 +411,10 @@ const storeB = new Store({
     }
 });
 
-// 调用connect.createConnector方法，传入store实例
-const connectA = connect.createConnector(storeA);
-
-const Container = san.defineComponent({...});
+const Container = san.defineComponent({/*...*/});
 
 // 调用手动创建的connectA方法进行storeA和组件连接
-let NewUserNameEditor = connect(
+const NewContainer = connect(
     storeA,
     {name: 'user.name'},
     {change: 'changeUserName'}
@@ -438,7 +428,7 @@ let NewUserNameEditor = connect(
 ### componsition api
 
 
-使用 [san-composition](https://github.com/baidu/san-composition) 可以使用 [use api](https://github.com/baidu/san-store/blob/master/doc/api.md#use) 连接 Store 实例和 San 组件：
+[use api](https://github.com/baidu/san-store/blob/master/doc/api.md#use) 提供了对 [san-composition](https://github.com/baidu/san-composition) 形式组件的 store 支持：
 
 1. 使用 `useState` 定义数据。
 2. 使用 `useAction` 定义方法。
@@ -450,7 +440,7 @@ import {useState} from 'san-store/use';
 import {Store} from 'san-store';
 
 // 创建模块A中的store实例
-const storeA = new Store({
+const myStore = new Store({
     initData: {
         name:'erik'
     },
@@ -467,12 +457,14 @@ export default defineComponent(context => {
             <input value="{=newName=}"><button on-click="change">change</button>
         </div>
     `);
+
     const name = useState(myStore, 'user.name', 'name');
+    const newName = data('newName', '');
     let changeUserName = useAction(myStore, 'changeUserName');
 
     method({
         change: () => {
-            changeUserName(context.data.get('newName'));
+            changeUserName(newName.get());
         }
     });
 
