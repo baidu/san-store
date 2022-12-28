@@ -1,4 +1,6 @@
 import babel from 'rollup-plugin-babel';
+import replace from '@rollup/plugin-replace';
+import pkg from './package.json';
 
 export default [{
     input: 'src/main.js',
@@ -7,7 +9,12 @@ export default [{
         format: 'umd',
         name: 'san-store'
     },
-	plugins: [babel()],
+	plugins: [
+        replace({
+            __VERSION__: pkg.version
+        }),
+        babel()
+    ],
     external: ['san-composition']
 }, {
     input: 'src/use.js',
@@ -21,6 +28,11 @@ export default [{
         }
     },
 
-	plugins: [babel()],
+	plugins: [
+        replace({
+            __VERSION__: pkg.version
+        }),
+        babel()
+    ],
     external: ['san-composition']
 }];

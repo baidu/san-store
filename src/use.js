@@ -12,6 +12,8 @@ import parseName from './parse-name';
 import {Store, store as defaultStore} from 'san-store';
 import emitDevtool from './devtool/emitter';
 
+export const version = '__VERSION__';
+
 /**
  * 操作store内数据
  *

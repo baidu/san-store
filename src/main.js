@@ -16,7 +16,7 @@ import connect from './connect';
  *
  * @type {string}
  */
-export let version = '2.1.3';
+export const version = '__VERSION__';
 
 export {Store, store, connect};
 
