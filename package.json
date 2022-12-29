@@ -1,6 +1,6 @@
 {
   "name": "san-store",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Application State Management for San",
   "scripts": {
     "build": "rm -rf dist && rollup --config && uglifyjs dist/san-store.source.js -mco dist/san-store.js && uglifyjs dist/san-store-use.source.js -mco dist/san-store-use.js && cp types/*.d.ts dist",
@@ -42,6 +42,17 @@
       "*": [
         "dist/*"
       ]
+    }
+  },
+
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/san-store.source.js"
+    },
+    "./use": {
+      "types": "./dist/use.d.ts",
+      "default": "./dist/san-store-use.source.js"
     }
   },
 
