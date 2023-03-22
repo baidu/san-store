@@ -56,21 +56,24 @@ export function useState(store, stateName, dataName = stateName) {
                         data(dataName).set(stateName(store.getState()));
                     }
                     else {
-                        let updateInfo = calcUpdateInfo({
+                        let updateInfoList = calcUpdateInfo({
                             dataName,
                             stateName: parseName(stateName)
                         }, diff);
+                        if (updateInfoList && updateInfoList.length > 0) {
+                            for (let i = 0; i < updateInfoList.length; i++) {
+                                let updateInfo = updateInfoList[i];
+                                if (updateInfo.spliceArgs) {
+                                    componentInstance.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
+                                }
+                                else {
+                                    componentInstance.data.set(
+                                        updateInfo.componentData,
+                                        store.getState(updateInfo.storeData)
+                                    );
+                                }
+                            }
 
-                        if (updateInfo) {
-                            if (updateInfo.spliceArgs) {
-                                componentInstance.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
-                            }
-                            else {
-                                componentInstance.data.set(
-                                    updateInfo.componentData,
-                                    store.getState(updateInfo.storeData)
-                                );
-                            }
                         }
                     }
                 }

@@ -166,13 +166,16 @@ function connect(store, mapStates, mapActions) {
                             );
                         }
                         else {
-                            let updateInfo = calcUpdateInfo(stateInfo, diff);
-                            if (updateInfo) {
-                                if (updateInfo.spliceArgs) {
-                                    this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
-                                }
-                                else {
-                                    this.data.set(updateInfo.componentData, store.getState(updateInfo.storeData));
+                            let updateInfoList = calcUpdateInfo(stateInfo, diff);
+                            if (updateInfoList && updateInfoList.length > 0) {
+                                for (let i = 0; i < updateInfoList.length; i++) {
+                                    const updateInfo = updateInfoList[i];
+                                    if (updateInfo.spliceArgs) {
+                                        this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
+                                    }
+                                    else {
+                                        this.data.set(updateInfo.componentData, store.getState(updateInfo.storeData));
+                                    }
                                 }
                             }
                         }

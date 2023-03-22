@@ -1,14 +1,19 @@
 import {Store, store} from 'san-store';
-import {useState, useAction} from 'san-store/use';
+import {useAction, useState} from 'san-store/use';
 import san from 'san';
-import {defineComponent, template, onAttached} from 'san-composition';
+import {defineComponent, onAttached, template} from 'san-composition';
 import {updateBuilder} from 'san-update';
 
 describe('use', () => {
     store.addAction('reset-for-use', () => {
         let resetBuilder = updateBuilder()
             .set('name', 'errorrik')
-            .set('emails', ['errorrik@gmail.com']);
+            .set('emails', ['errorrik@gmail.com'])
+            .set('hobbies', ['apple', 'banana', 'orange'])
+            .set('addresses', {
+                home: 'Beijing',
+                company: 'BaiduK5'
+            });
 
         return resetBuilder;
     });
@@ -30,7 +35,7 @@ describe('use', () => {
             useState('name');
             useState('emails[0]', 'email');
         }, san);
-        
+
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
         document.body.appendChild(wrap);
@@ -48,7 +53,7 @@ describe('use', () => {
             let builder = updateBuilder()
                 .set('name', payload.name)
                 .set('emails[0]', payload.email);
-    
+
             return builder;
         });
 
@@ -68,7 +73,7 @@ describe('use', () => {
             });
 
         }, san);
-        
+
         let myComponent = new MyComponent();
         let wrap = document.createElement('div');
         document.body.appendChild(wrap);
@@ -81,6 +86,99 @@ describe('use', () => {
             let u = wrap.getElementsByTagName('u')[0];
             expect(u.title).toBe('erik-erik@gmail.com');
 
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    });
+
+    it('component data should be update when modify same array chaining', done => {
+        const MY_ACTION_NAME = 'for-use-modify-array';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder()
+                .set('hobbies.0', payload[0])
+                .set('hobbies.1', payload[1])
+                .set('hobbies.2', payload[2]);
+        });
+
+        let MyComponent = defineComponent(() => {
+            template('<dl><dd san-for="hobby in hobbies">{{hobby}}</dd></dl>');
+            let hobbiesData = useState('hobbies', 'hobbies');
+            let update = useAction(MY_ACTION_NAME);
+            onAttached(() => {
+                expect(hobbiesData.get()).toEqual(['apple', 'banana', 'orange']);
+                update(['basketball', 'football', 'tennis']);
+            });
+        }, san);
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let dds = wrap.getElementsByTagName('dd');
+        expect(dds[0].innerText).toBe('apple');
+        expect(dds[1].innerText).toBe('banana');
+        expect(dds[2].innerText).toBe('orange');
+
+        san.nextTick(() => {
+            let dds = wrap.getElementsByTagName('dd');
+            expect(dds[0].innerText).toBe('basketball');
+            expect(dds[1].innerText).toBe('football');
+            expect(dds[2].innerText).toBe('tennis');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    });
+
+    it('component data should be update when merge object', done => {
+        const MY_ACTION_NAME = 'for-use-merge-object';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder().merge('addresses', payload);
+        });
+
+        let MyComponent = defineComponent(() => {
+            template(`
+                    <dl>
+                        <dd>{{addresses.home}}</dd>
+                        <dd>{{addresses.company}}</dd>
+                        <dd>{{addresses.travel}}</dd>
+                    </dl>`);
+
+            let addresses = useState('addresses', 'addresses');
+            let merge = useAction(MY_ACTION_NAME);
+
+            onAttached(() => {
+                expect(addresses.get()).toEqual({
+                    home: 'Beijing',
+                    company: 'BaiduK5'
+                });
+                merge({
+                    company: 'BaiduDasha',
+                    travel: 'Shanghai'
+                });
+            });
+
+        }, san);
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let dds = wrap.getElementsByTagName('dd');
+        expect(dds[0].innerText).toBe('Beijing');
+        expect(dds[1].innerText).toBe('BaiduK5');
+        expect(dds[2].innerText).toBe('');
+
+        san.nextTick(() => {
+            let dds = wrap.getElementsByTagName('dd');
+
+            expect(dds[0].innerText).toBe('Beijing');
+            expect(dds[1].innerText).toBe('BaiduDasha');
+            expect(dds[2].innerText).toBe('Shanghai');
             myComponent.dispose();
             document.body.removeChild(wrap);
             done();
@@ -177,7 +275,7 @@ describe('use', () => {
         let MyComponent = defineComponent(() => {
             template('<u title="{{name}}-{{email}}">{{name}}-{{email}}</u>');
 
-            
+
             useState(myStore, 'name');
             useState(myStore2, 'emails[0]', 'email');
 
@@ -261,5 +359,5 @@ describe('use', () => {
             document.body.removeChild(wrap);
             done();
         });
-    }); 
+    });
 });

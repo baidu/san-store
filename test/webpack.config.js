@@ -1,8 +1,7 @@
-
-
 const path = require('path');
 
 let config = {
+    mode: 'development',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name]',

@@ -10,11 +10,15 @@
  * 判断 state 是否需要更新
  *
  * @param {Object} info state的connect信息对象
+ * @param {string} info.dataName 组件数据的名称
+ * @param {Array} info.stateName store内 state的名称。调用方传递用点分隔的字符串，此处为分隔好的数组
  * @param {Array} diff 数据变更的diff信息
- * @return {boolean}
+ * @return {Array | undefined} 要更新的数据信息
  */
 export default function calcUpdateInfo(info, diff) {
     if (info.stateName) {
+        let updateInfoList = [];
+
         let stateNameLen = info.stateName.length;
 
         for (let i = 0, diffLen = diff.length; i < diffLen; i++) {
@@ -38,6 +42,7 @@ export default function calcUpdateInfo(info, diff) {
                     storeData: info.stateName
                 };
 
+                // 如果要修改的是子属性
                 if (targetLen > stateNameLen) {
                     updateInfo.storeData = target;
                     updateInfo.componentData += '.' + target.slice(stateNameLen).join('.');
@@ -56,9 +61,10 @@ export default function calcUpdateInfo(info, diff) {
                         );
                     }
                 }
-
-                return updateInfo;
+                updateInfoList.push(updateInfo)
             }
         }
+        return updateInfoList;
     }
 }
+

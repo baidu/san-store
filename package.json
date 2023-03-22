@@ -35,7 +35,6 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1"
   },
- 
   "types": "index.d.ts",
   "typesVersions": {
     ">=4.2": {
@@ -44,7 +43,6 @@
       ]
     }
   },
-
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -55,10 +53,9 @@
       "default": "./dist/san-store-use.source.js"
     }
   },
-
   "main": "dist/san-store.source.js",
   "unpkg": "dist/san-store",
-  "sideEffects": false,
+  "sideEffects": ["test/*.js"],
   "files": [
     "src",
     "dist"
