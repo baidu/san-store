@@ -15,6 +15,7 @@ module.exports = function (config) {
       noInfo: true
     },
     browsers: ['ChromeHeadless'],
+    // browsers: ['Chrome'], // 调试时开启
     customLaunchers: {
         Chrome_travis_ci: {
             base: 'ChromeHeadless',
@@ -23,6 +24,7 @@ module.exports = function (config) {
     },
     reporters: ['progress'],
     singleRun: true,
+    // singleRun: false, // 调试时开启
   })
 };
 

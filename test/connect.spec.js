@@ -1,4 +1,4 @@
-import {Store, store, connect} from 'san-store';
+import {connect, store, Store} from 'san-store';
 import san from 'san';
 import {updateBuilder} from 'san-update';
 
@@ -146,7 +146,12 @@ describe('connect', () => {
     store.addAction('reset-for-connect-module', () => {
         let resetBuilder = updateBuilder()
             .set('name', 'errorrik')
-            .set('emails', ['errorrik@gmail.com']);
+            .set('emails', ['errorrik@gmail.com'])
+            .set('hobbies', ['apple', 'banana', 'orange'])
+            .set('addresses', {
+                home: 'Beijing',
+                company: 'BaiduK5'
+            })
 
         return resetBuilder;
     });
@@ -331,7 +336,8 @@ describe('connect', () => {
         document.body.removeChild(wrap);
     });
 
-    it('data should be ready when component init, component declare as class and trans by babel, extends more than once', () => {
+    it('data should be ready when component init, component declare as class and trans by babel, extends more than' +
+        ' once', () => {
 
         var BaseComponent = /*#__PURE__*/function (_san$Component) {
             _inherits(BaseComponent, _san$Component);
@@ -452,6 +458,93 @@ describe('connect', () => {
         });
     });
 
+    it('component data should be update when modify same array chaining', done=>{
+        const MY_ACTION_NAME = 'for-connect-modify-array'
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder()
+                .set('hobbies.0', payload[0])
+                .set('hobbies.1', payload[1])
+                .set('hobbies.2', payload[2]);
+        });
+
+        let MyComponent = connect({
+            hobbies: 'hobbies'
+        })(
+            san.defineComponent({
+                template: '<dl><dd san-for="hobby in hobbies">{{hobby}}</dd></dl>'
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let dds = wrap.getElementsByTagName('dd');
+
+        expect(dds[0].innerText).toBe('apple');
+        expect(dds[1].innerText).toBe('banana');
+        expect(dds[2].innerText).toBe('orange');
+
+        store.dispatch(MY_ACTION_NAME, ['basketball', 'football', 'tennis']);
+        san.nextTick(() => {
+            let dds = wrap.getElementsByTagName('dd');
+            expect(dds[0].innerText).toBe('basketball');
+            expect(dds[1].innerText).toBe('football');
+            expect(dds[2].innerText).toBe('tennis');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
+    it('component data should be update when merge object', done=>{
+        const MY_ACTION_NAME = 'for-connect-merge-object'
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder().merge('addresses', payload)
+        });
+
+        let MyComponent = connect({
+            addresses: 'addresses'
+        })(
+            san.defineComponent({
+                template: `
+                    <dl>
+                        <dd>{{addresses.home}}</dd>
+                        <dd>{{addresses.company}}</dd>
+                        <dd>{{addresses.travel}}</dd>
+                    </dl>`
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let dds = wrap.getElementsByTagName('dd');
+
+        expect(dds[0].innerText).toBe('Beijing');
+        expect(dds[1].innerText).toBe('BaiduK5');
+        expect(dds[2].innerText).toBe('');
+
+        store.dispatch(MY_ACTION_NAME, {
+            company: 'BaiduDasha',
+            travel: 'Shanghai'
+        });
+        san.nextTick(() => {
+            let dds = wrap.getElementsByTagName('dd');
+            expect(dds[0].innerText).toBe('Beijing');
+            expect(dds[1].innerText).toBe('BaiduDasha');
+            expect(dds[2].innerText).toBe('Shanghai');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
     it('dispatch action method should connect to component "actions" member, object mapActions', done => {
         store.addAction('for-connect-module-3', payload => {
             let builder = updateBuilder()
@@ -549,7 +642,7 @@ describe('connect', () => {
         return builder;
     });
 
-    it('components data should not infulence each other, and push item', done => {
+    it('components data should not influence each other, and push item', done => {
         store.addAction('for-connect-module-5', email => {
             let builder = updateBuilder().push('persons[0].emails', email);
             return builder;
@@ -627,7 +720,7 @@ describe('connect', () => {
         });
     });
 
-    it('components data should not infulence each other, remove item', done => {
+    it('components data should not influence each other, remove item', done => {
         store.addAction('for-connect-module-6', email => {
             let builder = updateBuilder().remove('persons[0].emails', email);
             return builder;
