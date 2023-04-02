@@ -8,6 +8,7 @@
 
 import parseName from './parse-name';
 import calcUpdateInfo from './calc-update-info';
+import indexDiff from './index-diff';
 import defaultStore from './default-store';
 import Store from './store';
 import emitDevtool from './devtool/emitter';
@@ -140,8 +141,8 @@ function connect(store, mapStates, mapActions) {
             for (let i = 0; i < connects.length; i++) {
                 const {mapStates, mapStateCount, mapStateInfos, store} = connects[i];
                 // init data
-                for (let i = 0; i < mapStateCount; i++) {
-                    let stateInfo = mapStateInfos[i];
+                for (let j = 0; j < mapStateCount; j++) {
+                    let stateInfo = mapStateInfos[j];
 
                     if (typeof stateInfo.getter === 'function') {
                         this.data.set(
@@ -156,6 +157,8 @@ function connect(store, mapStates, mapActions) {
 
                 // listen store change
                 let listener = diff => {
+                    let diffIndex = indexDiff(diff);
+
                     for (let i = 0; i < mapStateCount; i++) {
                         let stateInfo = mapStateInfos[i];
 
@@ -166,10 +169,10 @@ function connect(store, mapStates, mapActions) {
                             );
                         }
                         else {
-                            let updateInfoList = calcUpdateInfo(stateInfo, diff);
-                            if (updateInfoList && updateInfoList.length > 0) {
-                                for (let i = 0; i < updateInfoList.length; i++) {
-                                    const updateInfo = updateInfoList[i];
+                            let updateInfos = calcUpdateInfo(stateInfo, diffIndex);
+                            if (updateInfos) {
+                                for (let j = 0; j < updateInfos.length; j++) {
+                                    const updateInfo = updateInfos[j];
                                     if (updateInfo.spliceArgs) {
                                         this.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
                                     }
@@ -210,8 +213,6 @@ function connect(store, mapStates, mapActions) {
                     component: this,
                 });
             }
-
-            this.__storeListeners = null;
 
             if (typeof disposed === 'function') {
                 disposed.call(this);

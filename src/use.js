@@ -8,6 +8,7 @@
 
 import {data, onInited, onDisposed, method} from 'san-composition';
 import calcUpdateInfo from './calc-update-info';
+import indexDiff from './index-diff';
 import parseName from './parse-name';
 import {Store, store as defaultStore} from 'san-store';
 import emitDevtool from './devtool/emitter';
@@ -45,6 +46,8 @@ export function useState(store, stateName, dataName = stateName) {
         if (!componentInstance.__useStates[store.id]) {
             // 一个store使用一个listener
             storeListener = diff => {
+                let diffIndex = indexDiff(diff);
+
                 const useStates = componentInstance.__useStates[store.id];
                 const dataNames = Object.keys(useStates);
                 // init data
@@ -56,13 +59,13 @@ export function useState(store, stateName, dataName = stateName) {
                         data(dataName).set(stateName(store.getState()));
                     }
                     else {
-                        let updateInfoList = calcUpdateInfo({
+                        let updateInfos = calcUpdateInfo({
                             dataName,
                             stateName: parseName(stateName)
-                        }, diff);
-                        if (updateInfoList && updateInfoList.length > 0) {
-                            for (let i = 0; i < updateInfoList.length; i++) {
-                                let updateInfo = updateInfoList[i];
+                        }, diffIndex);
+                        if (updateInfos) {
+                            for (let i = 0; i < updateInfos.length; i++) {
+                                let updateInfo = updateInfos[i];
                                 if (updateInfo.spliceArgs) {
                                     componentInstance.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
                                 }
