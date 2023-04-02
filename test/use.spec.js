@@ -127,6 +127,11 @@ describe('use', () => {
             expect(dds[1].innerText).toBe('football');
             expect(dds[2].innerText).toBe('tennis');
 
+
+            expect(myComponent.data.get('hobbies[0]')).toBe('basketball');
+            expect(myComponent.data.get('hobbies[1]')).toBe('football');
+            expect(myComponent.data.get('hobbies[2]')).toBe('tennis');
+
             myComponent.dispose();
             document.body.removeChild(wrap);
             done();
