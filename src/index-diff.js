@@ -42,7 +42,7 @@ export default function indexDiff(diff) {
             stack[j] = currIndexObj;
         }
     }
-    
+
     for (let i = 0, l = diff.length; i < l; i++) {
         let diffItem = diff[i];
         let target = diffItem.target;
