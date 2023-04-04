@@ -7,7 +7,7 @@
  */
 
 import {data, onInited, onDisposed, method} from 'san-composition';
-import calcUpdateInfo from './calc-update-info';
+import updateComponentConnectedData from './update-component-connected-data';
 import indexDiff from './index-diff';
 import parseName from './parse-name';
 import {Store, store as defaultStore} from 'san-store';
@@ -59,25 +59,15 @@ export function useState(store, stateName, dataName = stateName) {
                         data(dataName).set(stateName(store.getState()));
                     }
                     else {
-                        let updateInfos = calcUpdateInfo({
-                            dataName,
-                            stateName: parseName(stateName)
-                        }, diffIndex);
-                        if (updateInfos) {
-                            for (let i = 0; i < updateInfos.length; i++) {
-                                let updateInfo = updateInfos[i];
-                                if (updateInfo.spliceArgs) {
-                                    componentInstance.data.splice(updateInfo.componentData, updateInfo.spliceArgs);
-                                }
-                                else {
-                                    componentInstance.data.set(
-                                        updateInfo.componentData,
-                                        store.getState(updateInfo.storeData)
-                                    );
-                                }
-                            }
-
-                        }
+                        updateComponentConnectedData(
+                            componentInstance,
+                            store,
+                            {
+                                dataName,
+                                stateName: parseName(stateName)
+                            },
+                            diffIndex
+                        );
                     }
                 }
             };
