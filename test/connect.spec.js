@@ -545,6 +545,45 @@ describe('connect', () => {
         });
     })
 
+    it('component data should not be update when merge object not change connected state', done=>{
+        const MY_ACTION_NAME = 'for-connect-merge-object-other';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder().merge('articleFormView.formData', payload)
+        });
+
+        let MyComponent = connect({
+            showArticleLoading: 'articleFormView.showLoading'
+        })(
+            san.defineComponent({
+                template: `
+                    <dl>
+                        <dd s-if="showArticleLoading">if</dd>
+                        <dd s-else>else</dd>
+                    </dl>`
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let dds = wrap.getElementsByTagName('dd');
+
+        expect(dds[0].innerText).toBe('else');
+
+        store.dispatch(MY_ACTION_NAME, {
+            test: 'test'
+        });
+        san.nextTick(() => {
+            expect(dds[0].innerText).toBe('else');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
     it('dispatch action method should connect to component "actions" member, object mapActions', done => {
         store.addAction('for-connect-module-3', payload => {
             let builder = updateBuilder()
