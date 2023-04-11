@@ -36,7 +36,9 @@ export default function updateComponentConnectedData(component, store, info, dif
             indexItem = indexItem[stateNameItem];
         }
         else {
-            indexItem = null;
+            if (!indexItem.__selfDiff__) {
+                indexItem = null;
+            }
             break;
         }
     }

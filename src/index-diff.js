@@ -41,6 +41,8 @@ export default function indexDiff(diff) {
             indexObj = currIndexObj;
             stack[j] = currIndexObj;
         }
+        
+        indexObj.__selfDiff__ = true;
     }
 
     for (let i = 0, l = diff.length; i < l; i++) {

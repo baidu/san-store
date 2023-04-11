@@ -584,6 +584,188 @@ describe('connect', () => {
         });
     })
 
+    it('component data should be update when apply object', done=>{
+        const MY_ACTION_NAME = 'for-connect-apply-object';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder()
+                .apply('mask', mask => {
+                    return {
+                        show: payload.show,
+                        child: payload.child || '',
+                        data: (payload.data || '') + mask.data,
+                        times: mask.times + 1
+                    }
+                })
+        });
+
+        store.addAction(MY_ACTION_NAME + '-init', payload => {
+            return updateBuilder().set('mask', payload)
+        });
+
+        store.dispatch(MY_ACTION_NAME + '-init', {
+            show: true,
+            data: 2,
+            child: 'child',
+            times: 0
+        });
+
+        let MyComponent = connect({
+            show: 'mask.show',
+            child: 'mask.child',
+            data: 'mask.data'
+        })(
+            san.defineComponent({
+                template: `
+                    <div>
+                        <u>{{show}}</u><i>{{child}}</i><b>{{data}}</b>
+                    </div>
+                `
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        expect(wrap.getElementsByTagName('u')[0].innerText).toBe('true');
+        expect(wrap.getElementsByTagName('i')[0].innerText).toBe('child');
+        expect(wrap.getElementsByTagName('b')[0].innerText).toBe('2');
+
+        store.dispatch(MY_ACTION_NAME, {
+            show: false,
+            data: 'hello',
+            child: 'child2'
+        });
+        san.nextTick(() => {
+            
+            expect(wrap.getElementsByTagName('u')[0].innerText).toBe('false');
+            expect(wrap.getElementsByTagName('i')[0].innerText).toBe('child2');
+            expect(wrap.getElementsByTagName('b')[0].innerText).toBe('hello2');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
+
+    it('component data should be updated, when connected state changed', done=>{
+        const MY_ACTION_NAME = 'for-connect-set-value-connected';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder().set('obj.connected', 'changed')
+        })
+        store.addAction(MY_ACTION_NAME + '-init', payload => {
+            return updateBuilder().set('obj.connected', 'init')
+        })
+        store.dispatch(MY_ACTION_NAME + '-init');
+
+        let MyComponent = connect({
+            value: 'obj.connected'
+        })(
+            san.defineComponent({
+                template: `<u>{{value}}</u>`
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+
+        expect(u.innerText).toBe('init');
+
+        store.dispatch(MY_ACTION_NAME);
+        san.nextTick(() => {
+            expect(u.innerText).toBe('changed');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
+    it('component data should be updated, when connected state subprop changed', done=>{
+        const MY_ACTION_NAME = 'for-connect-set-value-connected-subprop';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder()
+                .set('obj.connectedsub.prop', 'changed')
+                .set('obj.connectedsub2.prop', 'changed')
+            
+        })
+        store.addAction(MY_ACTION_NAME + '-init', payload => {
+            return updateBuilder().set('obj.connectedsub', {'prop': 'init'})
+        })
+        store.dispatch(MY_ACTION_NAME + '-init');
+
+        let MyComponent = connect({
+            obj: 'obj.connectedsub'
+        })(
+            san.defineComponent({
+                template: `<u>{{obj.prop}}</u>`
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+
+        expect(u.innerText).toBe('init');
+
+        store.dispatch(MY_ACTION_NAME);
+        san.nextTick(() => {
+            expect(u.innerText).toBe('changed');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
+    it('component data should be updated, when connected state grandpa changed', done=>{
+        const MY_ACTION_NAME = 'for-connect-set-value-connected-grandpa';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder()
+                .set('grandobj', {'subprop': {value: 'changed'}})
+        })
+        store.addAction(MY_ACTION_NAME + '-init', payload => {
+            return updateBuilder().set('grandobj', {'subprop': {value: 'init'}})
+        })
+        store.dispatch(MY_ACTION_NAME + '-init');
+
+        let MyComponent = connect({
+            value: 'grandobj.subprop.value'
+        })(
+            san.defineComponent({
+                template: `<u>{{value}}</u>`
+            })
+        );
+
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        let myComponent = new MyComponent();
+        myComponent.attach(wrap);
+
+        let u = wrap.getElementsByTagName('u')[0];
+
+        expect(u.innerText).toBe('init');
+
+        store.dispatch(MY_ACTION_NAME);
+        san.nextTick(() => {
+            expect(u.innerText).toBe('changed');
+
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+            done();
+        });
+    })
+
+
     it('dispatch action method should connect to component "actions" member, object mapActions', done => {
         store.addAction('for-connect-module-3', payload => {
             let builder = updateBuilder()
