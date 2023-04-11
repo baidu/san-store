@@ -41,7 +41,7 @@ export default function indexDiff(diff) {
             indexObj = currIndexObj;
             stack[j] = currIndexObj;
         }
-        
+
         indexObj.__selfDiff__ = true;
     }
 
