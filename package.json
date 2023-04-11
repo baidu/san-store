@@ -1,6 +1,6 @@
 {
   "name": "san-store",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Application State Management for San",
   "scripts": {
     "build": "rm -rf dist && rollup --config && uglifyjs dist/san-store.source.js -mco dist/san-store.js && uglifyjs dist/san-store-use.source.js -mco dist/san-store-use.js && cp types/*.d.ts dist",
