@@ -1,7 +1,7 @@
 import {Store, store} from 'san-store';
 import {useAction, useState} from 'san-store/use';
 import san from 'san';
-import {defineComponent, onAttached, template} from 'san-composition';
+import {components, defineComponent, onAttached, template} from 'san-composition';
 import {updateBuilder} from 'san-update';
 
 describe('use', () => {
@@ -46,6 +46,58 @@ describe('use', () => {
 
         myComponent.dispose();
         document.body.removeChild(wrap);
+    });
+
+    it('useState with callback when there are multiple components', () => {
+        const MY_ACTION_NAME = 'for-use-cb';
+        store.addAction(MY_ACTION_NAME, payload => {
+            return updateBuilder().set('name', payload.name);
+        });
+
+        const SubComponent = defineComponent(() => {
+            template`<u>{{otherName}}</u>`;
+
+            useState((store) => {
+                return 'another_' + store.name;
+            }, 'otherName');
+        }, san);
+
+        let MyComponent = defineComponent(() => {
+            template(`
+                <div>
+                    <u title="{{name}}">{{name}}</u>
+                    <sub></sub>
+                </div>
+                `);
+
+            components({
+                'sub': SubComponent
+            });
+
+            useState('name', 'name');
+            let update = useAction(MY_ACTION_NAME, 'update');
+            onAttached(() => {
+                update({
+                    name: 'erik'
+                });
+            });
+        }, san);
+
+        let myComponent = new MyComponent();
+        let wrap = document.createElement('div');
+        document.body.appendChild(wrap);
+        myComponent.attach(wrap);
+
+        let us = wrap.getElementsByTagName('u');
+        expect(us[0].innerText).toBe('errorrik');
+        expect(us[1].innerText).toBe('another_errorrik');
+
+        san.nextTick(() => {
+            expect(us[0].innerText).toBe('erik');
+            expect(us[1].innerText).toBe('another_erik');
+            myComponent.dispose();
+            document.body.removeChild(wrap);
+        });
     });
 
     it('component data should be update when store data change', done => {
