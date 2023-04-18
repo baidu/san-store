@@ -42,6 +42,9 @@ export function useState(store, stateName, dataName = stateName) {
         if (!componentInstance.__useStates) {
             componentInstance.__useStates = {};
         }
+        if (!componentInstance.__useStateDatas) {
+            componentInstance.__useStateDatas = {};
+        }
 
         if (!componentInstance.__useStates[store.id]) {
             // 一个store使用一个listener
@@ -49,6 +52,7 @@ export function useState(store, stateName, dataName = stateName) {
                 let diffIndex = indexDiff(diff);
 
                 const useStates = componentInstance.__useStates[store.id];
+                const useStateDatas = componentInstance.__useStateDatas[store.id]
                 const dataNames = Object.keys(useStates);
                 // init data
                 for (let i = 0; i < dataNames.length; i++) {
@@ -56,7 +60,7 @@ export function useState(store, stateName, dataName = stateName) {
                     const stateName = useStates[dataName];
 
                     if (typeof stateName === 'function') {
-                        stateData.set(stateName(store.getState()));
+                        useStateDatas[dataName].set(stateName(store.getState()));
                     }
                     else {
                         updateComponentConnectedData(
@@ -83,11 +87,18 @@ export function useState(store, stateName, dataName = stateName) {
         }
 
         // save mapState
-        let useStates = componentInstance.__useStates[store.id] || {};
+        let useStates = componentInstance.__useStates[store.id];
+        if (!useStates) {
+            useStates = componentInstance.__useStates[store.id] = {};
+        }
+        useStates[dataName] = stateName; // 声明相同的值时覆盖
 
-        // 声明相同的值时覆盖
-        useStates[dataName] = stateName;
-        componentInstance.__useStates[store.id] = useStates;
+        let useStateDatas = componentInstance.__useStateDatas[store.id];
+        if (!useStateDatas) {
+            useStateDatas = componentInstance.__useStateDatas[store.id] = {};
+        }
+        useStateDatas[dataName] = stateData;
+
         store.log && emitDevtool('store-use-state-comp-inited', {
             stateName,
             dataName,

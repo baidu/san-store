@@ -49,38 +49,32 @@ describe('use', () => {
     });
 
     it('useState with callback when there are multiple components', () => {
-        const MY_ACTION_NAME = 'for-use-cb';
+        const MY_ACTION_NAME = 'for-use-state-with-fn';
         store.addAction(MY_ACTION_NAME, payload => {
-            return updateBuilder().set('name', payload.name);
+            let builder = updateBuilder();
+            if (payload.name) {
+                builder = builder.set('name', payload.name);
+            }
+            if (payload.age) {
+                builder = builder.set('age', payload.age);
+            }
+            return builder;
         });
-
-        const SubComponent = defineComponent(() => {
-            template`<u>{{otherName}}</u>`;
-
-            useState((store) => {
-                return 'another_' + store.name;
-            }, 'otherName');
-        }, san);
+        store.dispatch(MY_ACTION_NAME, {
+            name: 'erik',
+            age: 18
+        });
 
         let MyComponent = defineComponent(() => {
             template(`
                 <div>
                     <u title="{{name}}">{{name}}</u>
-                    <sub></sub>
+                    <u>{{age}}</u>
                 </div>
-                `);
+            `);
 
-            components({
-                'sub': SubComponent
-            });
-
-            useState('name', 'name');
-            let update = useAction(MY_ACTION_NAME, 'update');
-            onAttached(() => {
-                update({
-                    name: 'erik'
-                });
-            });
+            useState(state => state.name, 'name');
+            useState(state => state.age, 'age');
         }, san);
 
         let myComponent = new MyComponent();
@@ -89,12 +83,15 @@ describe('use', () => {
         myComponent.attach(wrap);
 
         let us = wrap.getElementsByTagName('u');
-        expect(us[0].innerText).toBe('errorrik');
-        expect(us[1].innerText).toBe('another_errorrik');
+        expect(us[0].innerText).toBe('erik');
+        expect(us[1].innerText).toBe('18');
 
+        store.dispatch(MY_ACTION_NAME, {
+            age: 40
+        });
         san.nextTick(() => {
             expect(us[0].innerText).toBe('erik');
-            expect(us[1].innerText).toBe('another_erik');
+            expect(us[1].innerText).toBe('40');
             myComponent.dispose();
             document.body.removeChild(wrap);
         });
