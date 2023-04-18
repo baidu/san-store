@@ -65,13 +65,26 @@ describe('use', () => {
             age: 18
         });
 
+        const SubComponent = defineComponent(() => {
+            template`<b>{{otherName}}</b>`;
+
+            useState(state => {
+                return 'another_' + state.name;
+            }, 'otherName');
+        }, san);
+
         let MyComponent = defineComponent(() => {
             template(`
                 <div>
                     <u title="{{name}}">{{name}}</u>
                     <u>{{age}}</u>
+                    <x-sub />
                 </div>
             `);
+
+            components({
+                'x-sub': SubComponent
+            });
 
             useState(state => state.name, 'name');
             useState(state => state.age, 'age');
@@ -86,12 +99,17 @@ describe('use', () => {
         expect(us[0].innerText).toBe('erik');
         expect(us[1].innerText).toBe('18');
 
+        let bs = wrap.getElementsByTagName('b');
+        expect(bs[0].innerText).toBe('another_erik');
+
         store.dispatch(MY_ACTION_NAME, {
             age: 40
         });
         san.nextTick(() => {
             expect(us[0].innerText).toBe('erik');
             expect(us[1].innerText).toBe('40');
+
+            expect(bs[0].innerText).toBe('another_erik');
             myComponent.dispose();
             document.body.removeChild(wrap);
         });
