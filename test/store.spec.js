@@ -1,6 +1,6 @@
 
 import {Store} from 'san-store';
-import {updateBuilder} from 'san-update';
+import {updateBuilder, builder} from 'san-update';
 
 describe('Store', () => {
     it('init data by constructor', () => {
@@ -280,6 +280,40 @@ describe('Store', () => {
             });
             return actionInfo;
         }
+    });
+
+    it('sync action, dispatch another action soon', done => {
+        let store = new Store({
+            initData: {
+                val: 'val'
+            }
+        });
+
+        expect(store.getState().val).toBe('val');
+
+        store.addAction('index', (name, {dispatch}) => {
+            dispatch('x', 'x');
+        });
+        store.addAction('x', (name, {dispatch}) => {
+            setTimeout(() => {
+                dispatch('y');
+            }, 1000);
+            return builder().set('val', name);
+        });
+        store.addAction('y', (name, {dispatch}) => {
+            dispatch('z');
+        });
+        store.addAction('z', (name, {dispatch}) => {
+            return builder().set('val', 'z');
+        });
+
+        store.dispatch('index');
+        expect(store.getState().val).toBe('x');
+        setTimeout(() => {
+            expect(store.getState().val).toBe('z');
+            console.log(store.actionInfoIndex)
+            done();
+        }, 2000);
     });
 
     it('dispatch async action in action, return Promise', done => {
