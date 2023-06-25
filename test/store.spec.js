@@ -282,7 +282,7 @@ describe('Store', () => {
         }
     });
 
-    it('sync action, dispatch another action soon', done => {
+    it('dispatch action soon when parent action is finished', done => {
         let store = new Store({
             initData: {
                 val: 'val'
@@ -311,7 +311,6 @@ describe('Store', () => {
         expect(store.getState().val).toBe('x');
         setTimeout(() => {
             expect(store.getState().val).toBe('z');
-            console.log(store.actionInfoIndex)
             done();
         }, 2000);
     });
