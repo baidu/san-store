@@ -52,7 +52,7 @@ export function useState(store, stateName, dataName = stateName) {
                 let diffIndex = indexDiff(diff);
 
                 const useStates = componentInstance.__useStates[store.id];
-                const useStateDatas = componentInstance.__useStateDatas[store.id]
+                const useStateDatas = componentInstance.__useStateDatas[store.id];
                 const dataNames = Object.keys(useStates);
                 // init data
                 for (let i = 0; i < dataNames.length; i++) {
