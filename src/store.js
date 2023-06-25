@@ -332,16 +332,17 @@ export default class Store {
 
         // free actionInfos
         if (this._detectActionDone(actionInfo.parentId) == null && !this.log) {
+            if (this.actionInfos.some(actionInfo => !actionInfo.done)) {
+                return;
+            }
             let len = this.actionInfos.length;
             while (len--) {
-                if (!this.actionInfos[len].done) {
-                    return;
-                }
+                const deleteId =  this.actionInfos[len].id;
+                delete this.actionInfoIndex[deleteId];
             }
 
             this.actionInfos = [];
             this.aiLen = 0;
-            delete this.actionInfoIndex[id];
         }
 
         return true;
