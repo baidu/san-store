@@ -259,7 +259,7 @@ export default class Store {
 
         let returnValue = action.call(this, payload, {
             getState: this.stateGetter,
-            dispatch: (name, payload) => this._dispatch(name, payload, id)
+            dispatch: (name, payload) => this._dispatch(name, payload, actionInfo.done ? null : id)
         });
 
         if (returnValue != null) {
@@ -330,19 +330,20 @@ export default class Store {
             });
         }
 
-        // free actionInfos
-        if (this._detectActionDone(actionInfo.parentId) == null && !this.log) {
-            if (this.actionInfos.some(actionInfo => !actionInfo.done)) {
-                return;
-            }
+        if (actionInfo.parentId) {
+            this._detectActionDone(actionInfo.parentId);
+        }
+        else if (!this.log) { // free actionInfos
             let len = this.actionInfos.length;
             while (len--) {
-                const deleteId =  this.actionInfos[len].id;
-                delete this.actionInfoIndex[deleteId];
+                if (!this.actionInfos[len].done) {
+                    return;
+                }
             }
 
             this.actionInfos = [];
             this.aiLen = 0;
+            this.actionInfoIndex = {};
         }
 
         return true;
