@@ -4,6 +4,7 @@ import './connect.spec';
 import './connect.san.spec';
 import './connect.createConnector.spec';
 import './use.spec';
+import './parse-name.spec';
 
 
 import {store, Store, connect} from 'san-store';
@@ -21,5 +22,3 @@ describe('main', () => {
         expect(typeof connect.san).toBe('function');
     });
 });
-
-

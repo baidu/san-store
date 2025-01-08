@@ -22,7 +22,7 @@ try {
 catch (ex) {}
 
 function extendsAsFunc(RawClass) {
-    let F = new Function();
+    let F = function () {};
     F.prototype = RawClass.prototype;
 
     let NewClass = function (option) {

@@ -51,7 +51,7 @@ export default function parseName(source) {
                 }
                 else if (/^(['"])([^\1]+)\1$/.test(propAccessorLiteral)) {
                     // for string literal
-                    result.push((new Function('return ' + propAccessorLiteral))());
+                    result.push(propAccessorLiteral.slice(1, propAccessorLiteral.length - 1));
                 }
 
                 term = term.slice(propAccessorEnd + 1);
