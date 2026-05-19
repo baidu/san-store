@@ -4,9 +4,9 @@
   "description": "Application State Management for San",
   "scripts": {
     "build": "rm -rf dist && rollup --config && uglifyjs dist/san-store.source.js -mco dist/san-store.js && uglifyjs dist/san-store-use.source.js -mco dist/san-store-use.js && cp types/*.d.ts dist",
-    "pretest": "npm run build && webpack --config test/webpack.config.js",
+    "pretest": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build && webpack --config test/webpack.config.js",
     "test-server": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build && webpack-dev-server --config test/webpack.config.js",
-    "test": "npm run build && karma start test/karma.config.js",
+    "test": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build && karma start test/karma.config.js",
     "lint": "eslint --ignore-path .eslintignore ./"
   },
   "devDependencies": {
@@ -20,7 +20,7 @@
     "eslint": "^7.18.0",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.5.2",
-    "karma": "^1.1.0",
+    "karma": "^6.4.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-jasmine": "^1.0.2",
     "karma-sourcemap-loader": "^0.3.0",

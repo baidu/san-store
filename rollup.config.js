@@ -11,7 +11,8 @@ export default [{
     },
 	plugins: [
         replace({
-            __VERSION__: pkg.version
+            __VERSION__: pkg.version,
+            preventAssignment: true
         }),
         babel()
     ],
@@ -30,9 +31,10 @@ export default [{
 
 	plugins: [
         replace({
-            __VERSION__: pkg.version
+            __VERSION__: pkg.version,
+            preventAssignment: true
         }),
         babel()
     ],
-    external: ['san-composition']
+    external: ['san-store', 'san-composition']
 }];
