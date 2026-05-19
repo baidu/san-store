@@ -1,11 +1,7 @@
 
 import type {DefinedComponentClass} from 'san';
+import type { Builder, DiffNode } from 'san-update';
 
-
-
-interface UpdateBuilder {
-    buildWithDiff: () => (oldObject: {}) => {}
-}
 
 interface StoreOptions {
     initData?: {
@@ -18,29 +14,21 @@ interface StoreOptions {
     name?: string,
 }
 
-interface StateChangeInfo {
-    $change: string;
-    target: string[];
-    oldValue: any;
-    newValue: any;
-    splice?: {
-        index: number;
-        deleteCount: number;
-        insertions: any[];
-    };
+interface StateChange extends DiffNode {
+    target: readonly string[];
 }
 
-interface StoreChangeListener {
-    (this: Store, changes: StateChangeInfo[]): void
+interface StateChangeListener {
+    (this: Store, changes: StateChange[]): void
 }
 
 type Action = (
-    payload: any, 
+    payload: any,
     context?: {
         getState?: (name: string) => any;
-        dispatch?: (name: string, payload: any) => Promise<void> | void; 
+        dispatch?: (name: string, payload: any) => Promise<void> | void;
     }
-) => Promise<void> | UpdateBuilder | void;
+) => Promise<void> | Builder | void;
 
 type StateSelector =  (states: {}) => any;
 type MapStates = {[key: string]: string | StateSelector} | string[];
@@ -55,8 +43,8 @@ export class Store {
 
     getState(name: string): any;
 
-    listen(listener: StoreChangeListener): void;
-    unlisten(listener: StoreChangeListener): void;
+    listen(listener: StateChangeListener): void;
+    unlisten(listener: StateChangeListener): void;
 
     addAction(name: string, action: Action): void;
     dispatch(name: string, payload: any): Promise<void> | void;
